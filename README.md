@@ -8,7 +8,7 @@
 |------|--------|-------------|
 | [我复刻了 Claude Tag！让机器人自动读写文件、写 spec，免费使用最强 Agent](https://youtu.be/fQ2lwxVk04k) | 2026-06-29 | [`claude-tag/`](./claude-tag) |
 | [别再花钱买 AI 工具！几行 Python 用 Google RAG 打造专属「读心」助理](https://youtu.be/BpDIpf-ebJc) | 2026-06-26 | [`google-rag-單集/`](./google-rag-單集) |
-| RAG → Agent 续集：用 Gemini function calling，让 AI 自己查完直接帮你写信 *(即将发布)* | 2026-07 | [`RAG2Agent/`](./RAG2Agent) |
+| [上一支的 RAG 只会回答，这次我让它自己查完直接写好一封信｜Python AI Agent](https://youtu.be/o2ttsH6D77U) | 2026-07-03 | [`RAG2Agent/`](./RAG2Agent) |
 | [2 个超实用 Claude Code Hooks：自动环境设置 ＋ 手机推播通知【进阶篇】](https://youtu.be/io0B2AjXfmU) | 2026-02-19 | [`ClaudeCode Hooks.md`](./ClaudeCode%20Hooks.md) |
 
 ## 📂 各目录内容说明
