@@ -10,6 +10,7 @@
 | [别再花钱买 AI 工具！几行 Python 用 Google RAG 打造专属「读心」助理](https://youtu.be/BpDIpf-ebJc) | 2026-06-26 | [`google-rag-單集/`](./google-rag-單集) |
 | [上一支的 RAG 只会回答，这次我让它自己查完直接写好一封信｜Python AI Agent](https://youtu.be/o2ttsH6D77U) | 2026-07-03 | [`RAG2Agent/`](./RAG2Agent) |
 | [2 个超实用 Claude Code Hooks：自动环境设置 ＋ 手机推播通知【进阶篇】](https://youtu.be/io0B2AjXfmU) | 2026-02-19 | [`ClaudeCode Hooks.md`](./ClaudeCode%20Hooks.md) |
+| [我给 Claude Code 挂了顾问，结果它一次都没出手过｜advisor 实测＋官方没提的坑](https://youtu.be/MCR1CVqQe3s) | 2026-07-13 | [`advisor/`](./advisor) |
 
 ## 📂 各目录内容说明
 
@@ -17,6 +18,7 @@
 - **[`google-rag-單集/`](./google-rag-單集)** — 从零做 Google RAG「读心」助理：建 corpus、上传文件、检索问答的完整一套（`create_corpus.py` / `upload_file.py` / `query.py` / `ask.py` 等）。
 - **[`RAG2Agent/`](./RAG2Agent)** — RAG 单集的续集：用 Gemini function calling 把上面那个「只会查文件回答」的 RAG，升级成会自己判断要不要查、查完还自动帮你写好一封请假信的 AI Agent（`agent.py`）。
 - **[`ClaudeCode Hooks.md`](./ClaudeCode%20Hooks.md)** — Claude Code Hooks 进阶篇的完整配置代码：自动环境设置（PATH/NVM）+ 手机推播通知（ntfy.sh / macOS / Windows）。
+- **[`advisor/`](./advisor)** — 实测 Claude Code 顾问模式（advisor）用的「秒杀」demo：一个故意藏了 race condition、会超卖的商品下单 API（`server.js`）＋ 50 并发压测脚本（`stress.js`）。拿它去看模型到底会不会找顾问升级决策。
 
 ---
 
