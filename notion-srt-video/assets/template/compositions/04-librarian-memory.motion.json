@@ -1,0 +1,7 @@
+{
+  "scene": "04-librarian-memory",
+  "duration_s": 55,
+  "rules": ["svg-path-draw", "spring-pop-entrance", "scale-swap-transition"],
+  "exit": { "vector": "stationary 0px/s", "still_moving": false },
+  "entry": { "vector": "up 37px/s", "from_rest": true }
+}

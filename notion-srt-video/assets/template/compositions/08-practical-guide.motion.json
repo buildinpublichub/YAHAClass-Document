@@ -1,0 +1,7 @@
+{
+  "scene": "08-practical-guide",
+  "duration_s": 35,
+  "rules": ["svg-path-draw", "spring-pop-entrance", "scale-swap-transition"],
+  "exit": { "vector": "none 0 px/s", "still_moving": false },
+  "entry": { "vector": "up 85 px/s", "from_rest": false }
+}

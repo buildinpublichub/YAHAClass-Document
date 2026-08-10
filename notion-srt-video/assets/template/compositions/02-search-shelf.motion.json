@@ -1,0 +1,7 @@
+{
+  "scene": "02-search-shelf",
+  "duration_s": 35,
+  "rules": ["svg-path-draw", "spring-pop-entrance", "scale-swap-transition"],
+  "exit": { "vector": "none 0px/s", "still_moving": false },
+  "entry": { "vector": "down 32px/s", "from_rest": true }
+}

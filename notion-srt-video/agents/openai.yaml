@@ -1,0 +1,4 @@
+interface:
+  display_name: "Notion SRT Video"
+  short_description: "将 SRT 直接制作为 Notion 极简竖屏动画"
+  default_prompt: "Use $notion-srt-video to turn this SRT file into a mobile-readable Notion-style vertical video."

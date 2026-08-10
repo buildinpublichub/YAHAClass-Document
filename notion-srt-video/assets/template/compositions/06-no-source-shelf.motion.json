@@ -1,0 +1,7 @@
+{
+  "scene": "06-no-source-shelf",
+  "duration_s": 20,
+  "rules": ["svg-path-draw", "scale-swap-transition", "spring-pop-entrance"],
+  "exit": { "vector": "stationary 0px/s", "still_moving": false },
+  "entry": { "vector": "up 39px/s", "from_rest": true }
+}

@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-resolution="portrait">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1080, height=1920">
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #FFFFFF;
+      }
+      body { font-family: sans-serif; color: #0A0A0A; }
+      #root {
+        position: relative;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+        background: #FFFFFF;
+      }
+      #base-paper {
+        position: absolute;
+        inset: 0;
+        background-color: #FFFFFF;
+      }
+      #root > div[data-composition-src] {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1920px;
+        overflow: hidden;
+      }
+      /* Notion editorial line-art treatment, derived from the approved references. */
+      #root > div[data-composition-src] [data-composition-id] {
+        color: #0A0A0A !important;
+      }
+      #root > div[data-composition-src] [class*="ground"] {
+        background: #FFFFFF !important;
+      }
+      #root > div[data-composition-src] [class*="speckle"] {
+        opacity: 0 !important;
+      }
+      #root > div[data-composition-src] div:not([data-composition-id]) {
+        color: #0A0A0A !important;
+        border-color: #0A0A0A !important;
+      }
+      #root > div[data-composition-src] [fill="#F8F6EF"] { fill: #FFFFFF !important; }
+      #root > div[data-composition-src] [fill="#F4C542"] { fill: #F7F7F5 !important; }
+      #root > div[data-composition-src] [fill="#2354C6"] { fill: #E8E7E4 !important; }
+      #root > div[data-composition-src] [fill="#E64A35"] { fill: #FFFFFF !important; }
+      #root > div[data-composition-src] [fill="#718A66"] { fill: #F7F7F5 !important; }
+      #root > div[data-composition-src] [stroke="#F4C542"],
+      #root > div[data-composition-src] [stroke="#2354C6"],
+      #root > div[data-composition-src] [stroke="#E64A35"],
+      #root > div[data-composition-src] [stroke="#718A66"] {
+        stroke: #0A0A0A !important;
+      }
+      #root > div[data-composition-src] [class*="blue"],
+      #root > div[data-composition-src] [class*="red"],
+      #root > div[data-composition-src] [class*="yellow"] {
+        stroke: #0A0A0A !important;
+        color: #0A0A0A !important;
+      }
+      #root > div[data-composition-src] [id$="-stage"] {
+        opacity: 0 !important;
+      }
+      #root > div[data-composition-src] { z-index: 1; }
+      .caption {
+        position: absolute;
+        left: 54px;
+        top: 1588px;
+        width: 972px;
+        height: 236px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 28px 34px;
+        text-align: center;
+        font-size: 44px;
+        font-weight: 760;
+        line-height: 1.34;
+        letter-spacing: 0.01em;
+        color: #0A0A0A;
+        background: #FFFFFF;
+        border: 4px solid #0A0A0A;
+        border-radius: 16px;
+        box-shadow: none;
+        z-index: 30;
+      }
+      .caption::before {
+        content: none;
+      }
+      .notion-cast {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1498px;
+        overflow: hidden;
+        pointer-events: none;
+        z-index: 2;
+      }
+      .notion-figure {
+        --art-h: 1100px;
+        --frame-h: 620px;
+        --ratio: 0.5;
+        position: absolute;
+        width: calc(var(--art-h) * var(--ratio));
+        height: var(--frame-h);
+        background-position: center top;
+        background-repeat: no-repeat;
+        background-size: auto var(--art-h);
+        filter: contrast(1.06);
+      }
+      .character-01 { --ratio: 0.3214; background-image: url("assets/characters/trimmed/01-curious.png"); }
+      .character-02 { --ratio: 0.4931; background-image: url("assets/characters/trimmed/02-researcher.png"); }
+      .character-03 { --ratio: 0.5625; background-image: url("assets/characters/trimmed/03-presenter.png"); }
+      .character-04 { --ratio: 0.56; background-image: url("assets/characters/trimmed/04-librarian.png"); }
+      .character-05 { --ratio: 0.5393; background-image: url("assets/characters/trimmed/05-concerned-researcher.png"); }
+      .character-06 { --ratio: 0.3813; background-image: url("assets/characters/trimmed/06-skeptical-reader.png"); }
+      .character-07 { --ratio: 0.7507; background-image: url("assets/characters/trimmed/07-connected-search.png"); }
+      .character-08 { --ratio: 0.7753; background-image: url("assets/characters/trimmed/08-guide.png"); }
+      .character-09 { --ratio: 0.4933; background-image: url("assets/characters/trimmed/09-verifier.png"); }
+      #notion-01 .notion-figure { --art-h: 1450px; left: 560px; top: 750px; }
+      #notion-02 .notion-figure { --art-h: 1100px; left: 50px; top: 740px; transform: scaleX(-1); }
+      #notion-03 .notion-figure { --art-h: 1050px; left: 420px; top: 750px; transform: scaleX(-1); }
+      #notion-04 .notion-figure { --art-h: 900px; top: 780px; }
+      #notion-04 .role-a { left: 70px; }
+      #notion-04 .role-b { left: 580px; }
+      #notion-05 .notion-figure { --art-h: 1100px; left: 430px; top: 750px; }
+      #notion-06 .notion-figure { --art-h: 1400px; left: 40px; top: 780px; transform: scaleX(-1); }
+      #notion-07 .notion-figure { --art-h: 900px; left: 60px; top: 740px; }
+      #notion-08 .notion-figure { --art-h: 820px; left: 390px; top: 740px; transform: scaleX(-1); }
+      #notion-09 .notion-figure { --art-h: 1150px; --frame-h: 560px; left: 450px; top: 870px; }
+
+      .notion-props {
+        position: absolute;
+        inset: 0;
+        width: 1080px;
+        height: 1498px;
+        overflow: hidden;
+        z-index: 3;
+        pointer-events: none;
+        color: #0A0A0A;
+      }
+      .np-eyebrow {
+        position: absolute;
+        left: 64px;
+        top: 96px;
+        font: 700 21px/1 sans-serif;
+        letter-spacing: .16em;
+      }
+      .np-title {
+        position: absolute;
+        left: 64px;
+        top: 136px;
+        font: 760 48px/1.08 sans-serif;
+        letter-spacing: -.025em;
+      }
+      .np-card {
+        position: absolute;
+        background: #FFFFFF;
+        border: 4px solid #0A0A0A;
+        border-radius: 18px;
+      }
+      .np-soft { background: #F7F7F5; }
+      .np-label {
+        font: 700 24px/1 sans-serif;
+        letter-spacing: .12em;
+      }
+      .np-copy { font: 680 44px/1.28 sans-serif; }
+      .np-mini { font: 670 40px/1.28 sans-serif; }
+      .np-rule { height: 4px; background: #0A0A0A; border-radius: 99px; }
+      .np-row { display: flex; align-items: center; gap: 18px; }
+      .np-icon {
+        width: 68px;
+        height: 68px;
+        border: 4px solid #0A0A0A;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: #FFFFFF;
+        flex: 0 0 auto;
+        font: 760 28px/1 sans-serif;
+      }
+      .np-icon svg { width: 40px; height: 40px; fill: none; stroke: currentColor; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+      .np-arrow {
+        position: absolute;
+        height: 4px;
+        background: #0A0A0A;
+        transform-origin: left center;
+      }
+      .np-arrow::after {
+        content: "";
+        position: absolute;
+        right: -2px;
+        top: -8px;
+        width: 17px;
+        height: 17px;
+        border-right: 4px solid #0A0A0A;
+        border-top: 4px solid #0A0A0A;
+        transform: rotate(45deg);
+      }
+      .np-lines { display: grid; gap: 13px; }
+      .np-lines i { display: block; height: 4px; background: #0A0A0A; border-radius: 99px; }
+      .np-lines i:nth-child(2) { width: 84%; }
+      .np-lines i:nth-child(3) { width: 64%; }
+      .np-step, .np-spot { opacity: 0; }
+
+      /* 01 — one large idea per beat. */
+      #props-01 .search-box { left: 72px; top: 220px; width: 936px; height: 480px; padding: 64px; display:flex; align-items:center; justify-content:space-between; }
+      #props-01 .search-box strong { font: 760 76px/1 sans-serif; letter-spacing:.08em; }
+      #props-01 .lens { width:50px; height:50px; border:4px solid #0A0A0A; border-radius:50%; position:relative; }
+      #props-01 .lens::after { content:""; position:absolute; width:31px; height:4px; background:#0A0A0A; right:-24px; bottom:-12px; transform:rotate(45deg); border-radius:99px; }
+      #props-01 .question-card, #props-01 .mode-card, #props-01 .split-card { left: 112px; top: 220px; width: 856px; min-height: 500px; padding: 58px; }
+      #props-01 .question-card .q { font:760 118px/1 sans-serif; margin:18px 0 22px; }
+      #props-01 .mode-card { display:flex; flex-direction:column; justify-content:center; }
+      #props-01 .split-grid { display:grid; grid-template-columns:1fr 1fr; gap:26px; margin-top:42px; }
+      #props-01 .split-grid div { border:4px solid #0A0A0A; border-radius:14px; padding:30px 16px; text-align:center; font:740 44px/1.18 sans-serif; }
+
+      /* 02 — one source card replaces the previous one. */
+      #props-02 .count { left:112px; top:230px; width:856px; height:480px; display:grid; place-items:center; font:780 80px/1 sans-serif; letter-spacing:.06em; }
+      #props-02 .source-stack { position:absolute; left:112px; top:230px; width:856px; height:500px; }
+      #props-02 .source { left:0; top:0; width:856px; height:480px; padding:64px; }
+      #props-02 .source .np-rule { margin:34px 0 28px; width:100%; }
+      #props-02 .choice { left:112px; top:230px; width:856px; height:480px; padding:64px; display:flex; align-items:center; gap:38px; }
+
+      /* 03 — one answer state per beat. */
+      #props-03 .funnel { position:absolute; left:200px; top:210px; width:680px; height:510px; }
+      #props-03 .funnel svg { width:100%; height:100%; fill:none; stroke:#0A0A0A; stroke-width:8; stroke-linecap:round; stroke-linejoin:round; }
+      #props-03 .answer-card, #props-03 .warning-card, #props-03 .ask-card { left:112px; top:230px; width:856px; min-height:480px; padding:64px; }
+      #props-03 .ask-card { display:flex; align-items:center; gap:34px; }
+
+      /* 04 — one library, two ways of knowing. */
+      #props-04 .library { left:72px; top:200px; width:936px; height:560px; padding:44px; }
+      #props-04 .shelf { height:140px; border-bottom:5px solid #0A0A0A; display:flex; align-items:flex-end; gap:18px; padding:0 16px 16px; }
+      #props-04 .book { width:54px; border:4px solid #0A0A0A; background:#F7F7F5; border-radius:5px 5px 0 0; }
+      #props-04 .book:nth-child(1) { height:82px; } #props-04 .book:nth-child(2) { height:112px; } #props-04 .book:nth-child(3) { height:96px; } #props-04 .book:nth-child(4) { height:124px; } #props-04 .book:nth-child(5) { height:74px; } #props-04 .book:nth-child(6) { height:106px; }
+      #props-04 .compare { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:28px; }
+      #props-04 .compare > div { border:3px solid #0A0A0A; border-radius:14px; padding:28px; min-height:170px; }
+      #props-04 .memory-note { left:112px; top:230px; width:856px; height:480px; padding:64px; display:grid; place-items:center; text-align:center; }
+
+      /* 05 — each consequence owns the frame. */
+      #props-05 .risk-list { position:absolute; left:112px; top:230px; width:856px; height:500px; }
+      #props-05 .risk { left:0; top:0; width:856px; min-height:480px; padding:84px 64px 64px 174px; }
+      #props-05 .risk .np-icon { position:absolute; left:52px; top:62px; width:82px; height:82px; }
+      #props-05 .confidence { left:112px; top:230px; width:856px; height:480px; padding:64px; }
+      #props-05 .confidence-meter { display:flex; gap:10px; margin-top:26px; }
+      #props-05 .confidence-meter i { width:132px; height:28px; border:3px solid #0A0A0A; border-radius:6px; background:#F7F7F5; }
+      #props-05 .confidence-meter i:nth-child(-n+4) { background:#0A0A0A; }
+
+      /* 06 — fluent answer, missing source. */
+      #props-06 .doc { left:112px; top:200px; width:856px; height:560px; padding:60px; }
+      #props-06 .doc-tab { position:absolute; right:28px; top:24px; font:700 20px/1 sans-serif; letter-spacing:.12em; }
+      #props-06 .doc .np-lines { margin-top:110px; }
+      #props-06 .broken, #props-06 .verify { left:112px; top:230px; width:856px; min-height:480px; padding:64px; display:flex; align-items:center; gap:38px; }
+
+      /* 07 — three stages, presented one by one. */
+      #props-07 .pipeline { position:absolute; left:112px; top:230px; width:856px; height:500px; }
+      #props-07 .node { left:0; top:0; width:856px; height:480px; padding:72px 64px; }
+      #props-07 .connector { left:220px; width:4px; height:134px; background:#0A0A0A; position:absolute; }
+      #props-07 .connector::after { content:""; position:absolute; left:-8px; bottom:-1px; width:17px; height:17px; border-right:4px solid #0A0A0A; border-bottom:4px solid #0A0A0A; transform:rotate(45deg); }
+      #props-07 .c1, #props-07 .c2 { display:none; }
+      #props-07 .citation-pills { display:flex; gap:12px; margin-top:20px; }
+      #props-07 .citation-pills span { border:3px solid #0A0A0A; border-radius:99px; padding:14px 22px; font:700 28px/1 sans-serif; }
+
+      /* 08 — one mobile-readable decision card at a time. */
+      #props-08 .guide { position:absolute; left:72px; top:220px; width:936px; height:500px; }
+      #props-08 .guide-row {
+        position:absolute;
+        inset:0;
+        min-height:480px;
+        padding:112px 60px 54px;
+        display:flex;
+        gap:28px;
+        align-items:center;
+        opacity:0;
+      }
+      #props-08 .guide-row::before {
+        position:absolute;
+        left:36px;
+        top:30px;
+        font:700 20px/1 sans-serif;
+        letter-spacing:.14em;
+      }
+      #props-08 .guide-row:nth-child(1)::before { content:"01 / 04"; }
+      #props-08 .guide-row:nth-child(2)::before { content:"02 / 04"; }
+      #props-08 .guide-row:nth-child(3)::before { content:"03 / 04"; }
+      #props-08 .guide-row:nth-child(4)::before { content:"04 / 04"; }
+      #props-08 .guide-row strong { display:block; max-width:650px; font:780 52px/1.16 sans-serif; }
+      #props-08 .guide-row span { display:block; margin-top:20px; font:670 40px/1.28 sans-serif; }
+      #props-08 .guide-row .np-icon { flex:0 0 88px; width:88px; height:88px; font-size:25px; }
+      #props-08 .result-pill { position:absolute; right:38px; top:34px; border:3px solid #0A0A0A; border-radius:99px; padding:14px 22px; font:700 25px/1 sans-serif; }
+
+      /* 09 — final verification. */
+      #props-09 .verify-page { left:112px; top:210px; width:856px; height:630px; padding:60px; }
+      #props-09 .verify-page .np-lines { margin-top:70px; gap:25px; }
+      #props-09 .check-row { display:flex; align-items:center; gap:26px; margin-top:58px; font:760 40px/1.2 sans-serif; }
+      #props-09 .final-note { left:112px; top:220px; width:856px; height:520px; padding:64px; display:grid; place-items:center; text-align:center; }
+
+      /* Card-led stage: the card owns the canvas; the character is a small annotation inside it. */
+      .notion-cast { z-index: 4; }
+      .np-label { font-size: 28px; }
+      .np-copy { font-size: 58px; }
+      .np-mini { font-size: 48px; }
+
+      #props-01 .search-box,
+      #props-01 .question-card,
+      #props-01 .mode-card,
+      #props-01 .split-card,
+      #props-02 .count,
+      #props-02 .choice,
+      #props-03 .answer-card,
+      #props-03 .warning-card,
+      #props-03 .ask-card,
+      #props-04 .library,
+      #props-04 .memory-note,
+      #props-05 .confidence,
+      #props-06 .doc,
+      #props-06 .broken,
+      #props-06 .verify,
+      #props-09 .verify-page,
+      #props-09 .final-note {
+        left: 72px;
+        top: 220px;
+        width: 936px;
+        height: 1190px;
+        min-height: 1190px;
+        padding: 72px;
+      }
+      #props-01 .search-box strong { font-size: 92px; }
+      #props-01 .question-card .q { font-size: 150px; }
+      #props-01 .split-grid { gap: 32px; margin-top: 54px; }
+      #props-01 .split-grid div { padding: 42px 20px; font-size: 54px; }
+
+      #props-02 .count { font-size: 100px; }
+      #props-02 .source-stack { left:72px; top:220px; width:936px; height:1190px; }
+      #props-02 .source { left:0; top:0; width:936px; height:1190px; padding:72px; }
+
+      #props-03 .funnel {
+        left:72px;
+        top:220px;
+        width:936px;
+        height:1190px;
+        padding-top:130px;
+        display:flex;
+        align-items:flex-start;
+        justify-content:center;
+        background:#FFFFFF;
+        border:4px solid #0A0A0A;
+        border-radius:18px;
+      }
+      #props-03 .funnel svg { width:720px; height:620px; }
+
+      #props-04 .library { padding:64px; }
+      #props-04 .compare > div { min-height:230px; padding:34px; }
+      #props-04 .compare .np-copy { font-size:50px; }
+
+      #props-05 .risk-list { left:72px; top:220px; width:936px; height:1190px; }
+      #props-05 .risk { left:0; top:0; width:936px; height:1190px; min-height:1190px; padding:92px 72px 72px 190px; }
+      #props-05 .risk .np-icon { left:64px; top:78px; }
+      #props-05 .confidence-meter i { width:142px; height:34px; }
+
+      #props-06 .doc .np-lines { margin-top:150px; gap:22px; }
+
+      #props-07 .pipeline { left:72px; top:220px; width:936px; height:1190px; }
+      #props-07 .node { left:0; top:0; width:936px; height:1190px; padding:88px 72px; }
+
+      #props-08 .guide { left:72px; top:220px; width:936px; height:1190px; }
+      #props-08 .guide-row { min-height:1190px; padding:120px 72px 340px; }
+      #props-08 .guide-row strong { max-width:690px; font-size:62px; }
+      #props-08 .guide-row span { font-size:48px; }
+
+      #props-09 .verify-page .np-lines { margin-top:90px; gap:28px; }
+      #props-09 .check-row { margin-top:72px; font-size:48px; }
+
+      #notion-01 .notion-figure { --art-h:900px; --frame-h:360px; left:680px; top:1020px; transform:scaleX(-1); }
+      #notion-02 .notion-figure { --art-h:720px; --frame-h:360px; left:620px; top:1020px; transform:scaleX(1); }
+      #notion-03 .notion-figure { --art-h:720px; --frame-h:360px; left:590px; top:1020px; }
+      #notion-04 .notion-figure { --art-h:600px; --frame-h:350px; top:1040px; }
+      #notion-04 .role-a { left:120px; }
+      #notion-04 .role-b { left:690px; }
+      #notion-05 .notion-figure { --art-h:720px; --frame-h:360px; left:620px; top:1020px; }
+      #notion-06 .notion-figure { --art-h:900px; --frame-h:360px; left:650px; top:1020px; transform:scaleX(1); }
+      #notion-07 .notion-figure { --art-h:620px; --frame-h:360px; left:530px; top:1020px; }
+      #notion-08 .notion-figure { --art-h:620px; --frame-h:360px; left:520px; top:1020px; }
+      #notion-09 .notion-figure { --art-h:700px; --frame-h:360px; left:630px; top:1020px; }
+
+      /* A centered 3:4 content module inside the 9:16 frame: 936×1248, y=336–1584. */
+      .np-eyebrow { top:336px; }
+      .np-title { top:376px; }
+      .caption { left:72px; top:1310px; width:936px; height:274px; }
+
+      #props-01 .search-box,
+      #props-01 .question-card,
+      #props-01 .mode-card,
+      #props-01 .split-card,
+      #props-02 .count,
+      #props-02 .choice,
+      #props-03 .answer-card,
+      #props-03 .warning-card,
+      #props-03 .ask-card,
+      #props-04 .library,
+      #props-04 .memory-note,
+      #props-05 .confidence,
+      #props-06 .doc,
+      #props-06 .broken,
+      #props-06 .verify,
+      #props-09 .verify-page,
+      #props-09 .final-note {
+        top:450px;
+        height:820px;
+        min-height:820px;
+      }
+      #props-02 .source-stack,
+      #props-05 .risk-list,
+      #props-07 .pipeline,
+      #props-08 .guide {
+        top:450px;
+        height:820px;
+      }
+      #props-02 .source,
+      #props-05 .risk,
+      #props-07 .node,
+      #props-08 .guide-row {
+        height:820px;
+        min-height:820px;
+      }
+      #props-03 .funnel { top:450px; height:820px; padding-top:72px; }
+      #props-03 .funnel svg { width:620px; height:430px; }
+
+      #props-01 .search-box { align-items:flex-start; padding-top:170px; }
+      #props-01 .mode-card { justify-content:flex-start; padding-top:170px; }
+      #props-02 .count { place-items:start center; padding-top:170px; }
+      #props-02 .choice,
+      #props-03 .ask-card,
+      #props-06 .broken,
+      #props-06 .verify { align-items:flex-start; padding-top:170px; }
+      #props-04 .memory-note,
+      #props-09 .final-note { place-items:start center; padding-top:170px; }
+      #props-08 .guide-row { padding:100px 72px 260px; }
+
+      .np-support {
+        position:absolute;
+        left:72px;
+        bottom:245px;
+        width:570px;
+        padding-top:24px;
+        border-top:3px solid #0A0A0A;
+        font:650 40px/1.35 sans-serif;
+        letter-spacing:.005em;
+        color:#0A0A0A;
+      }
+      /* Scene 04 reserves a clean middle band between the comparison and cast. */
+      #props-04 .library .shelf { height:118px; padding-bottom:12px; }
+      #props-04 .library .compare { margin-top:20px; }
+      #props-04 .library .compare > div { min-height:190px; padding:26px; }
+      #props-04 .library .compare .np-copy { font-size:44px; }
+      #props-04 .library .np-support,
+      #props-04 .memory-note .np-support { bottom:300px; }
+
+      /* Guide copy ends before the supporting character begins. */
+      #props-08 .guide-row .np-support { bottom:210px; width:470px; font-size:36px; }
+
+      #notion-01 .notion-figure { --art-h:750px; --frame-h:300px; left:730px; top:970px; }
+      #notion-02 .notion-figure { --art-h:620px; --frame-h:300px; left:650px; top:970px; }
+      #notion-03 .notion-figure { --art-h:620px; --frame-h:300px; left:620px; top:970px; }
+      #notion-04 .notion-figure { --art-h:480px; --frame-h:265px; top:1005px; }
+      #notion-04 .role-a { left:150px; }
+      #notion-04 .role-b { left:720px; }
+      #notion-05 .notion-figure { --art-h:620px; --frame-h:300px; left:650px; top:970px; }
+      #notion-06 .notion-figure { --art-h:750px; --frame-h:300px; left:690px; top:970px; }
+      #notion-07 .notion-figure { --art-h:540px; --frame-h:300px; left:570px; top:970px; }
+      #notion-08 .notion-figure { --art-h:480px; --frame-h:270px; left:650px; top:1000px; }
+      #notion-09 .notion-figure { --art-h:600px; --frame-h:300px; left:670px; top:970px; }
+    </style>
+  </head>
+  <body>
+    <div data-hf-id="hf-ro67" id="root" data-composition-id="main" data-start="0" data-duration="300" data-width="1080" data-height="1920">
+      <div data-hf-id="hf-b3sl" id="base-paper" class="clip" data-start="0" data-duration="300" data-track-index="0"></div>
+
+      <div data-hf-id="hf-49b5" id="scene-01" data-composition-id="01-mistaken-search-box" data-composition-src="compositions/01-mistaken-search-box.html" data-start="0" data-duration="25" data-track-index="1" data-width="1080" data-height="1920"></div>
+      <div data-hf-id="hf-3n3i" id="scene-02" data-composition-id="02-search-shelf" data-composition-src="compositions/02-search-shelf.html" data-start="25" data-duration="35" data-track-index="1" data-width="1080" data-height="1920"></div>
+      <div data-hf-id="hf-115a" id="scene-03" data-composition-id="03-ai-conclusion" data-composition-src="compositions/03-ai-conclusion.html" data-start="60" data-duration="40" data-track-index="1" data-width="1080" data-height="1920"></div>
+      <div data-hf-id="hf-to04" id="scene-04" data-composition-id="04-librarian-memory" data-composition-src="compositions/04-librarian-memory.html" data-start="100" data-duration="55" data-track-index="1" data-width="1080" data-height="1920"></div>
+      <div data-hf-id="hf-b5qs" id="scene-05" data-composition-id="05-memory-risks" data-composition-src="compositions/05-memory-risks.html" data-start="155" data-duration="50" data-track-index="1" data-width="1080" data-height="1920"></div>
+      <div data-hf-id="hf-jv6s" id="scene-06" data-composition-id="06-no-source-shelf" data-composition-src="compositions/06-no-source-shelf.html" data-start="205" data-duration="20" data-track-index="1" data-width="1080" data-height="1920"></div>
+      <div data-hf-id="hf-cgke" id="scene-07" data-composition-id="07-connected-search-tool" data-composition-src="compositions/07-connected-search-tool.html" data-start="225" data-duration="30" data-track-index="1" data-width="1080" data-height="1920"></div>
+      <div data-hf-id="hf-nw25" id="scene-08" data-composition-id="08-practical-guide" data-composition-src="compositions/08-practical-guide.html" data-start="255" data-duration="35" data-track-index="1" data-width="1080" data-height="1920"></div>
+      <div data-hf-id="hf-amoy" id="scene-09" data-composition-id="09-verify-outro" data-composition-src="compositions/09-verify-outro.html" data-start="290" data-duration="10" data-track-index="1" data-width="1080" data-height="1920"></div>
+
+      <div data-hf-id="hf-miv7" id="notion-01" class="clip notion-cast" data-start="0" data-duration="25" data-track-index="2"><div data-hf-id="hf-sjyu" class="notion-figure character-01"></div></div>
+      <div data-hf-id="hf-ulm0" id="notion-02" class="clip notion-cast" data-start="25" data-duration="35" data-track-index="2"><div data-hf-id="hf-olut" class="notion-figure character-02"></div></div>
+      <div data-hf-id="hf-3vg0" id="notion-03" class="clip notion-cast" data-start="60" data-duration="40" data-track-index="2"><div data-hf-id="hf-nu70" class="notion-figure character-03"></div></div>
+      <div data-hf-id="hf-dpao" id="notion-04" class="clip notion-cast" data-start="100" data-duration="55" data-track-index="2"><div data-hf-id="hf-utvb" class="notion-figure character-04 role-a"></div><div data-hf-id="hf-xx2m" class="notion-figure character-02 role-b"></div></div>
+      <div data-hf-id="hf-y9vw" id="notion-05" class="clip notion-cast" data-start="155" data-duration="50" data-track-index="2"><div data-hf-id="hf-55yq" class="notion-figure character-05"></div></div>
+      <div data-hf-id="hf-9voo" id="notion-06" class="clip notion-cast" data-start="205" data-duration="20" data-track-index="2"><div data-hf-id="hf-17up" class="notion-figure character-06"></div></div>
+      <div data-hf-id="hf-udwm" id="notion-07" class="clip notion-cast" data-start="225" data-duration="30" data-track-index="2"><div data-hf-id="hf-0g6w" class="notion-figure character-07"></div></div>
+      <div data-hf-id="hf-1nm7" id="notion-08" class="clip notion-cast" data-start="255" data-duration="35" data-track-index="2"><div data-hf-id="hf-52hb" class="notion-figure character-08"></div></div>
+      <div data-hf-id="hf-pcwy" id="notion-09" class="clip notion-cast" data-start="290" data-duration="10" data-track-index="2"><div data-hf-id="hf-14da" class="notion-figure character-09"></div></div>
+
+      <section data-hf-id="hf-4erc" id="props-01" class="clip notion-props" data-start="0" data-duration="25" data-track-index="3">
+        <div data-hf-id="hf-idcv" class="np-eyebrow np-step">01 / WRONG MODEL</div>
+        <div data-hf-id="hf-7gl2" id="spot-01-search" class="np-card search-box np-spot"><strong data-hf-id="hf-umo2">SEARCH</strong><span data-hf-id="hf-6vgl" class="lens"></span></div>
+        <div data-hf-id="hf-vn87" id="spot-01-question" class="np-card question-card np-spot">
+          <div data-hf-id="hf-ebmq" class="np-label">THE QUESTION</div><div data-hf-id="hf-okze" class="q">?</div><div data-hf-id="hf-5jpl" class="np-copy">更聪明的搜索框？</div>
+        </div>
+        <div data-hf-id="hf-5nwb" id="spot-01-mode" class="np-card np-soft mode-card np-spot"><div data-hf-id="hf-x8kq" class="np-label">AI DOES</div><div data-hf-id="hf-vcbl" class="np-copy" style="margin-top:22px">现场组织答案</div></div>
+        <div data-hf-id="hf-fnkt" id="spot-01-split" class="np-card split-card np-spot"><div data-hf-id="hf-kyua" class="np-label">TWO DIFFERENT JOBS</div><div data-hf-id="hf-ngih" class="split-grid"><div data-hf-id="hf-ntjd"><span data-hf-id="hf-kg25" style="display:block">搜索</span><span data-hf-id="hf-ndte" style="display:block">找来源</span></div><div data-hf-id="hf-zke0"><span data-hf-id="hf-mb8t" style="display:block">AI</span><span data-hf-id="hf-o99z" style="display:block">给结论</span></div></div></div>
+      </section>
+
+      <section data-hf-id="hf-pj3t" id="props-02" class="clip notion-props" data-start="25" data-duration="35" data-track-index="3">
+        <div data-hf-id="hf-3dfe" class="np-eyebrow np-step">02 / RETRIEVAL</div>
+        <div data-hf-id="hf-96qw" class="np-title np-step">搜索给你一组来源</div>
+        <div data-hf-id="hf-cbsi" id="spot-02-count" class="np-card np-soft count np-spot">10 LINKS</div>
+        <div data-hf-id="hf-dgug" class="source-stack">
+          <div data-hf-id="hf-wf6d" id="spot-02-ad" class="np-card source np-spot"><div data-hf-id="hf-55gi" class="np-label">01 / AD</div><div data-hf-id="hf-5omd" class="np-rule"></div><div data-hf-id="hf-ratq" class="np-mini">宠物医院推广页面</div></div>
+          <div data-hf-id="hf-lfd5" id="spot-02-wiki" class="np-card source np-spot"><div data-hf-id="hf-rzyw" class="np-label">02 / WIKI</div><div data-hf-id="hf-1jqx" class="np-rule"></div><div data-hf-id="hf-008o" class="np-mini">猫咪不吃东西的八个原因</div></div>
+          <div data-hf-id="hf-mma8" id="spot-02-forum" class="np-card source np-spot"><div data-hf-id="hf-dyvq" class="np-label">03 / FORUM</div><div data-hf-id="hf-2qo0" class="np-rule"></div><div data-hf-id="hf-frwd" class="np-mini">三天没吃东西，在线等</div></div>
+        </div>
+        <div data-hf-id="hf-7o6v" id="spot-02-choice" class="np-card choice np-spot"><div data-hf-id="hf-ohal" class="np-icon">✓</div><div data-hf-id="hf-yeow"><div data-hf-id="hf-opkq" class="np-label">YOU DECIDE</div><div data-hf-id="hf-sp3k" class="np-mini" style="margin-top:10px">自己挑、自己读、自己综合</div></div></div>
+      </section>
+
+      <section data-hf-id="hf-aphj" id="props-03" class="clip notion-props" data-start="60" data-duration="40" data-track-index="3">
+        <div data-hf-id="hf-fh3n" class="np-eyebrow np-step">03 / SYNTHESIS</div>
+        <div data-hf-id="hf-88af" class="np-title np-step">AI 直接组织结论</div>
+        <div data-hf-id="hf-eaj9" id="spot-03-funnel" class="funnel np-spot"><svg data-hf-id="hf-wm6n" viewBox="0 0 500 330" aria-hidden="true"><path data-hf-id="hf-vicv" d="M42 42 H458 L330 176 V276 L250 312 L170 276 V176 Z" /><path data-hf-id="hf-de6p" d="M102 100 H398 M152 150 H348" /><path data-hf-id="hf-6yz7" d="M250 82 V232 M218 202 L250 234 L282 202" /></svg></div>
+        <div data-hf-id="hf-sdsh" id="spot-03-answer" class="np-card answer-card np-spot"><div data-hf-id="hf-3qce" class="np-label">FIRST / OBSERVE</div><div data-hf-id="hf-zz6f" class="np-copy" style="margin-top:22px">精神状态与持续时间</div><div data-hf-id="hf-er5c" class="np-lines" style="margin-top:20px"><i data-hf-id="hf-wt6k"></i><i data-hf-id="hf-zeb8"></i><i data-hf-id="hf-y7e5"></i></div></div>
+        <div data-hf-id="hf-s85k" id="spot-03-warning" class="np-card np-soft warning-card np-spot"><div data-hf-id="hf-8k8t" class="np-row"><div data-hf-id="hf-fgrb" class="np-icon">!</div><div data-hf-id="hf-y7yw"><div data-hf-id="hf-pe0t" class="np-label">WARNING</div><div data-hf-id="hf-ktd0" class="np-mini" style="margin-top:10px">超过 24 小时就医</div></div></div></div>
+        <div data-hf-id="hf-nqho" id="spot-03-ask" class="np-card ask-card np-spot"><div data-hf-id="hf-d2x5" class="np-icon">?</div><div data-hf-id="hf-8uz0" class="np-copy">继续追问，继续解释</div></div>
+      </section>
+
+      <section data-hf-id="hf-ol5f" id="props-04" class="clip notion-props" data-start="100" data-duration="55" data-track-index="3">
+        <div data-hf-id="hf-gwh7" class="np-eyebrow np-step">04 / LIBRARY</div>
+        <div data-hf-id="hf-od7b" class="np-title np-step">同一座图书馆，两种工作方式</div>
+        <div data-hf-id="hf-flvx" id="spot-04-library" class="np-card library np-spot">
+          <div data-hf-id="hf-h444" class="shelf"><div data-hf-id="hf-faef" class="book"></div><div data-hf-id="hf-zzt3" class="book"></div><div data-hf-id="hf-zli2" class="book"></div><div data-hf-id="hf-z771" class="book"></div><div data-hf-id="hf-1zc8" class="book"></div><div data-hf-id="hf-1l17" class="book"></div></div>
+          <div data-hf-id="hf-krut" class="compare"><div data-hf-id="hf-x11t"><div data-hf-id="hf-sk03" class="np-label">SEARCH</div><div data-hf-id="hf-w64t" class="np-copy" style="margin-top:18px">把你带到书架</div></div><div data-hf-id="hf-xfcu"><div data-hf-id="hf-pv2d" class="np-label">AI</div><div data-hf-id="hf-d5w6" class="np-copy" style="margin-top:18px">凭读过的记忆回答</div></div></div>
+        </div>
+        <div data-hf-id="hf-cfsx" id="spot-04-memory" class="np-card np-soft memory-note np-spot"><div data-hf-id="hf-dp5v" class="np-copy">一本在手，一本在脑中</div></div>
+      </section>
+
+      <section data-hf-id="hf-oza1" id="props-05" class="clip notion-props" data-start="155" data-duration="50" data-track-index="3">
+        <div data-hf-id="hf-cjqq" class="np-eyebrow np-step">05 / MEMORY RISKS</div>
+        <div data-hf-id="hf-9qiq" class="np-title np-step">凭记忆回答的三个后果</div>
+        <div data-hf-id="hf-2i9m" class="risk-list">
+          <div data-hf-id="hf-9quj" id="spot-05-risk1" class="np-card risk np-spot"><div data-hf-id="hf-93uv" class="np-icon">1</div><div data-hf-id="hf-htf3" class="np-label">MIX-UP</div><div data-hf-id="hf-klzl" class="np-copy" style="margin-top:18px">作者、案件与细节可能记串</div></div>
+          <div data-hf-id="hf-2nt7" id="spot-05-risk2" class="np-card risk np-spot"><div data-hf-id="hf-8pju" class="np-icon">2</div><div data-hf-id="hf-cdtd" class="np-label">CUT-OFF</div><div data-hf-id="hf-husb" class="np-copy" style="margin-top:18px">知识停在过去某个时间点</div></div>
+          <div data-hf-id="hf-29i6" id="spot-05-risk3" class="np-card risk np-spot"><div data-hf-id="hf-8b8t" class="np-icon">3</div><div data-hf-id="hf-c8ys" class="np-label">NO SHELF</div><div data-hf-id="hf-jbzi" class="np-copy" style="margin-top:18px">给结论，却没有天然出处</div></div>
+        </div>
+        <div data-hf-id="hf-1srn" id="spot-05-confidence" class="np-card np-soft confidence np-spot"><div data-hf-id="hf-acaj" class="np-label">SAME CONFIDENCE</div><div data-hf-id="hf-0qhj" class="np-mini" style="margin-top:15px">记错时，也可能一样流畅</div><div data-hf-id="hf-li30" class="confidence-meter"><i data-hf-id="hf-ylp6"></i><i data-hf-id="hf-0l8b"></i><i data-hf-id="hf-0zjc"></i><i data-hf-id="hf-zsm9"></i><i data-hf-id="hf-06xa"></i></div></div>
+      </section>
+
+      <section data-hf-id="hf-vnhv" id="props-06" class="clip notion-props" data-start="205" data-duration="20" data-track-index="3">
+        <div data-hf-id="hf-qb1u" class="np-eyebrow np-step">06 / NO SOURCE SHELF</div>
+        <div data-hf-id="hf-cv6u" class="np-title np-step">流畅，不等于可核对</div>
+        <div data-hf-id="hf-0yau" id="spot-06-doc" class="np-card doc np-spot"><div data-hf-id="hf-mjma" class="doc-tab">ANSWER</div><div data-hf-id="hf-v0d6" class="np-icon">AI</div><div data-hf-id="hf-puk8" class="np-lines"><i data-hf-id="hf-26gf"></i><i data-hf-id="hf-2krg"></i><i data-hf-id="hf-oz7w"></i><i data-hf-id="hf-okwv"></i><i data-hf-id="hf-o6lu"></i></div></div>
+        <div data-hf-id="hf-7psg" id="spot-06-broken" class="np-card np-soft broken np-spot"><div data-hf-id="hf-x6o1" class="np-icon">×</div><div data-hf-id="hf-w8fr"><div data-hf-id="hf-nt7i" class="np-label">SOURCE MISSING</div><div data-hf-id="hf-58pn" class="np-mini" style="margin-top:10px">没有天然网址可点</div></div></div>
+        <div data-hf-id="hf-xng1" id="spot-06-verify" class="np-card verify np-spot"><div data-hf-id="hf-nsal" class="np-icon">?</div><div data-hf-id="hf-iat9" class="np-copy">这是真的吗？</div></div>
+      </section>
+
+      <section data-hf-id="hf-vdev" id="props-07" class="clip notion-props" data-start="225" data-duration="30" data-track-index="3">
+        <div data-hf-id="hf-zqwo" class="np-eyebrow np-step">07 / SEARCH + AI</div>
+        <div data-hf-id="hf-l6s9" class="np-title np-step">联网模式 = 查找 + 组织</div>
+        <div data-hf-id="hf-vcte" class="pipeline">
+          <div data-hf-id="hf-qr3z" id="spot-07-search" class="np-card node node-search np-spot"><div data-hf-id="hf-f8zr" class="np-label">STEP 01 / SEARCH</div><div data-hf-id="hf-ev4l" class="np-copy" style="margin-top:20px">把最新资料查回来</div></div>
+          <div data-hf-id="hf-0u2q" class="connector c1"></div>
+          <div data-hf-id="hf-2h7c" id="spot-07-ai" class="np-card np-soft node node-ai np-spot"><div data-hf-id="hf-vnpu" class="np-label">STEP 02 / AI</div><div data-hf-id="hf-meg7" class="np-copy" style="margin-top:20px">总结成人话</div></div>
+          <div data-hf-id="hf-ta7p" class="connector c2"></div>
+          <div data-hf-id="hf-pgtx" id="spot-07-answer" class="np-card node node-answer np-spot"><div data-hf-id="hf-hhfy" class="np-label">ANSWER + SOURCES</div><div data-hf-id="hf-729w" class="citation-pills"><span data-hf-id="hf-7wfw">① 来源</span><span data-hf-id="hf-eazh">② 来源</span></div></div>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-e0p2" id="props-08" class="clip notion-props" data-start="255" data-duration="35" data-track-index="3">
+        <div data-hf-id="hf-t1k8" class="np-eyebrow np-step">08 / FIELD GUIDE</div>
+        <div data-hf-id="hf-1l9j" class="np-title np-step">什么事，找谁办？</div>
+        <div data-hf-id="hf-d5ps" class="guide">
+          <div data-hf-id="hf-y3bz" id="guide-01" class="np-card guide-row"><div data-hf-id="hf-ijh0" class="np-icon">NOW</div><div data-hf-id="hf-wmqs"><strong data-hf-id="hf-pfqi">天气、新闻、股价</strong><span data-hf-id="hf-epeh">此刻发生的事实</span></div><div data-hf-id="hf-x1j7" class="result-pill">搜索</div></div>
+          <div data-hf-id="hf-pian" id="guide-02" class="np-card guide-row"><div data-hf-id="hf-oz7o" class="np-icon">?</div><div data-hf-id="hf-vftp"><strong data-hf-id="hf-hhzv">解释概念与报告</strong><span data-hf-id="hf-zvbc">需要连续追问</span></div><div data-hf-id="hf-gg5j" class="result-pill">AI</div></div>
+          <div data-hf-id="hf-p3zm" id="guide-03" class="np-card guide-row"><div data-hf-id="hf-425i" class="np-icon">✎</div><div data-hf-id="hf-vu4q"><strong data-hf-id="hf-mk68">改写、翻译、创意</strong><span data-hf-id="hf-cawu">需要组织语言</span></div><div data-hf-id="hf-8pnr" class="result-pill">AI</div></div>
+          <div data-hf-id="hf-opol" id="guide-04" class="np-card guide-row"><div data-hf-id="hf-ee8n" class="np-icon">!</div><div data-hf-id="hf-1043"><strong data-hf-id="hf-lbkm">法条、药量、数据</strong><span data-hf-id="hf-d2ex">重要事实必须核对</span></div><div data-hf-id="hf-rk8h" class="result-pill">AI → 搜索</div></div>
+        </div>
+      </section>
+
+      <section data-hf-id="hf-vhir" id="props-09" class="clip notion-props" data-start="290" data-duration="10" data-track-index="3">
+        <div data-hf-id="hf-ubbj" class="np-eyebrow np-step">09 / FINAL CHECK</div>
+        <div data-hf-id="hf-hny2" class="np-title np-step">重要事实，核对出处</div>
+        <div data-hf-id="hf-zam5" id="spot-09-verify" class="np-card verify-page np-spot"><div data-hf-id="hf-lxu9" class="np-row"><div data-hf-id="hf-8gqp" class="np-icon">✓</div><div data-hf-id="hf-efhe" class="np-label">SOURCE VERIFIED</div></div><div data-hf-id="hf-55g0" class="np-lines"><i data-hf-id="hf-jqbp"></i><i data-hf-id="hf-qkg0"></i><i data-hf-id="hf-q64z"></i><i data-hf-id="hf-prty"></i></div><div data-hf-id="hf-m4lz" class="check-row"><div data-hf-id="hf-92av" class="np-icon">1</div><span data-hf-id="hf-7q18">找到原始来源</span></div><div data-hf-id="hf-yj87" class="check-row"><div data-hf-id="hf-5i7y" class="np-icon">2</div><span data-hf-id="hf-mw3p">确认日期与上下文</span></div></div>
+        <div data-hf-id="hf-nq96" id="spot-09-summary" class="np-card np-soft final-note np-spot"><div data-hf-id="hf-38yv" class="np-copy">搜索给书架，AI 给结论。</div></div>
+      </section>
+
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const captions = [
+        "关于 AI，新手最常见的一个误解是：这不就是个更聪明的搜索框吗？",
+        "完全不是一回事。",
+        "上一期我们讲了，AI 在玩接话茬。",
+        "这一期，我用同一个问题分别问搜索引擎和 AI。",
+        "你一眼就能看出它俩的本质区别。看完你会知道，什么事该找谁办。",
+        "问题很简单：猫不吃饭怎么办？",
+        "先看搜索引擎。它给你的是一串链接。",
+        "第一条是宠物医院的广告。",
+        "第二条是某个百科页面，标题叫猫咪不吃东西的八个原因。",
+        "第三条是论坛求助帖，楼主家猫三天没吃东西，在线等。",
+        "十个链接，自己挑、自己读、自己综合。",
+        "哪条靠谱，你说了算。",
+        "再看 AI。它直接给你一段话。",
+        "猫不吃饭，先看两件事，精神状态和持续时间。",
+        "如果精神还好，只是一两顿不吃，可能是换粮、天热或者轻微应激。",
+        "可以先换回原来的粮，给点温水，观察一天。",
+        "但如果超过二十四小时完全不吃，或者伴随呕吐、蔫着不动，别等了。",
+        "尽快去宠物医院——猫长时间空腹有脂肪肝的风险。",
+        "最后它还会问你：告诉我猫的年龄和最近有什么变化，我帮你进一步判断。",
+        "一个给你书架，一个直接给你结论。",
+        "为什么差别这么大？我给你一个比喻。",
+        "搜索引擎，是图书管理员。",
+        "你说要找什么，它把你带到书架前。",
+        "指给你十本可能相关的书，还顺手塞两本广告。",
+        "这些书是别人写的，管理员自己一个字都没读过。",
+        "读不读、信不信，是你的事。",
+        "而 AI，是一个读完了整个图书馆的人。",
+        "它提前读完了图书馆里几乎所有的书，然后把书全都还了回去。",
+        "所以你问它问题的时候，它手边一本书都没有。",
+        "全凭消化之后的记忆，现场把答案接出来。",
+        "记住这个画面：一个手上有书但没读过，一个读完了但手上没书。",
+        "而“凭记忆回答”这件事，会带来三个后果。",
+        "第一，它可能记串。",
+        "把 A 作者的书安到 B 头上。",
+        "把两个相似案件的细节混着说。",
+        "更麻烦的是，它记错的时候，语气和记对的时候一模一样自信。",
+        "第二，它的知识有截止日期。",
+        "它读书是在过去某个时间点完成的，那之后世界上发生的事，它一概不知道。",
+        "你问它昨天的新闻、今天的天气、现在的股价。",
+        "它要么坦白说不知道，要么凭旧记忆瞎接一个。",
+        "后面这种，更危险。",
+        "第三，它给结论，不给书架。",
+        "搜索结果里每一条都有网址，你能点进去核对。",
+        "但 AI 给你的是一段现成的话，没有天然的出处可查。",
+        "它说得越流畅，你越容易忘了问一句：这是真的吗？",
+        "可是我用的 AI 明明能查今天的新闻啊？",
+        "现在很多 AI 产品带联网搜索。",
+        "先当一回搜索引擎，把资料查回来。",
+        "再当接话机器，把资料总结成人话。",
+        "查资料的是外挂功能，组织语言的还是那台接话机器。",
+        "你看到 AI 的回答里带引用来源，通常就是这个模式在工作。",
+        "那到底什么事该找谁？给你一张速查表。",
+        "查今天的天气、新闻、股价、营业时间——找搜索，或者用 AI 的联网功能。",
+        "因为你要的是此刻的事实，纯凭记忆的 AI 不可能知道。",
+        "解释概念、名词或者体检报告——问 AI。",
+        "它能顺着你的追问一直讲下去。",
+        "改写、润色、翻译、起名字、出主意——问 AI。",
+        "查重要事实，比如法条、药量、具体数据——AI 先答，再用搜索核对。",
+        "总结：搜索引擎给书架，AI 给结论；记忆可能记串，也有截止日期。",
+        "重要的事实值得核对出处。下一期，我们看它怎么一本正经地胡说八道。"
+      ];
+
+      const root = document.getElementById("root");
+      captions.forEach((text, index) => {
+        const el = document.createElement("div");
+        el.id = `caption-${String(index + 1).padStart(2, "0")}`;
+        el.className = "clip caption";
+        el.dataset.start = String(index * 5);
+        el.dataset.duration = "5";
+        el.dataset.trackIndex = "20";
+        el.dataset.layoutAllowCaptionZone = "true";
+        el.textContent = text;
+        root.appendChild(el);
+      });
+
+      const supportCopy = [
+        ["#spot-01-search", "输入问题，搜索返回的是一组可访问来源。"],
+        ["#spot-01-question", "它们看起来相似，背后却是两种完全不同的工作。"],
+        ["#spot-01-mode", "AI 不是把网页原文搬过来，而是现场组织一段回答。"],
+        ["#spot-01-split", "一个负责找资料，一个负责把资料组织成结论。"],
+        ["#spot-02-count", "链接来自不同网站、作者和发布时间。"],
+        ["#spot-02-ad", "广告也是搜索结果的一部分，但它有明确的推广目的。"],
+        ["#spot-02-wiki", "内容由第三方页面提供，你需要自己阅读和判断。"],
+        ["#spot-02-forum", "真实经验可以参考，却不等于专业结论。"],
+        ["#spot-02-choice", "选择、阅读、比较和判断都由你完成。"],
+        ["#spot-03-funnel", "AI 会把已有信息压缩、重组，直接生成一段回答。"],
+        ["#spot-03-answer", "它会先给判断框架，再根据你的补充继续解释。"],
+        ["#spot-03-warning", "重要风险会被整理成明确的行动建议。"],
+        ["#spot-03-ask", "你可以沿着同一个上下文继续追问。"],
+        ["#spot-04-library", "搜索引擎把你带到资料面前，但不替你读。"],
+        ["#spot-04-memory", "AI 依靠训练时形成的内部记忆来回答。"],
+        ["#spot-05-risk1", "人名、案例和细节可能在记忆中互相串联。"],
+        ["#spot-05-confidence", "表达流畅只代表句子顺，不代表事实准确。"],
+        ["#spot-05-risk2", "训练结束后新发生的事实，不会自动进入记忆。"],
+        ["#spot-05-risk3", "结论可以直接出现，原始来源却需要另外查找。"],
+        ["#spot-06-doc", "回答完整不等于能够追溯到原始出处。"],
+        ["#spot-06-broken", "没有天然链接，就无法直接点回原文核对。"],
+        ["#spot-06-verify", "重要信息需要再找原始材料确认。"],
+        ["#spot-07-search", "联网模式先访问网络，获得当下的资料。"],
+        ["#spot-07-ai", "再把多份资料整理成更容易理解的自然语言。"],
+        ["#spot-07-answer", "回答中的引用来源，让结论变得可以核对。"],
+        ["#guide-01", "实时事实优先搜索，不要只依赖 AI 的记忆。"],
+        ["#guide-02", "需要解释和连续追问时，AI 更合适。"],
+        ["#guide-03", "语言组织、改写和创意任务可以交给 AI。"],
+        ["#guide-04", "法条、药量和数据等高风险事实必须二次核对。"],
+        ["#spot-09-summary", "搜索负责找资料，AI 负责把资料组织成结论。"]
+      ];
+      supportCopy.forEach(([selector, text]) => {
+        const card = document.querySelector(selector);
+        if (!card) return;
+        const note = document.createElement("div");
+        note.className = "np-support";
+        note.textContent = text;
+        card.appendChild(note);
+      });
+
+      const tl = gsap.timeline({ paused: true });
+      [0,25,60,100,155,205,225,255,290].forEach((start, index) => {
+        const id = `#notion-${String(index + 1).padStart(2, "0")}`;
+        tl.fromTo(id,
+          { opacity: 0, x: index % 2 === 0 ? 34 : -34, y: 12 },
+          { opacity: 1, x: 0, y: 0, duration: 0.56, ease: "power4.out" },
+          start + 0.16
+        );
+      });
+      const sceneWindows = [
+        [0, 25], [25, 35], [60, 40], [100, 55], [155, 50],
+        [205, 20], [225, 30], [255, 35], [290, 10]
+      ];
+      sceneWindows.forEach(([start, duration], index) => {
+        const sceneId = String(index + 1).padStart(2, "0");
+        const steps = gsap.utils.toArray(`#props-${sceneId} .np-step`);
+        steps.forEach((el, stepIndex) => {
+          const offset = stepIndex < 2
+            ? 0.18 + stepIndex * 0.46
+            : Math.min(duration - 3, 2 + (stepIndex - 2) * 6.5);
+          tl.fromTo(el,
+            { opacity: 0, y: 18, x: stepIndex % 2 === 0 ? -10 : 10 },
+            { opacity: 1, y: 0, x: 0, duration: 0.52, ease: "power4.out", immediateRender: false },
+            start + offset
+          );
+        });
+        if (index < sceneWindows.length - 1) {
+          tl.to([`#props-${sceneId}`, `#notion-${sceneId}`],
+            { opacity: 0, x: -72, duration: 0.32, ease: "power3.in" },
+            start + duration - 0.32
+          );
+        }
+      });
+      const spotlightBeats = [
+        ["#spot-01-search", 0.4, 5], ["#spot-01-question", 5, 10], ["#spot-01-mode", 10, 15], ["#spot-01-split", 15, 24.6],
+        ["#spot-02-count", 25.4, 35], ["#spot-02-ad", 35, 40], ["#spot-02-wiki", 40, 45], ["#spot-02-forum", 45, 50], ["#spot-02-choice", 50, 59.6],
+        ["#spot-03-funnel", 60.4, 65], ["#spot-03-answer", 65, 80], ["#spot-03-warning", 80, 90], ["#spot-03-ask", 90, 99.6],
+        ["#spot-04-library", 100.4, 135], ["#spot-04-memory", 135, 154.6],
+        ["#spot-05-risk1", 155.4, 170], ["#spot-05-confidence", 170, 175], ["#spot-05-risk2", 175, 190], ["#spot-05-risk3", 190, 204.6],
+        ["#spot-06-doc", 205.3, 210], ["#spot-06-broken", 210, 220], ["#spot-06-verify", 220, 224.6],
+        ["#spot-07-search", 225.4, 240], ["#spot-07-ai", 240, 250], ["#spot-07-answer", 250, 254.6],
+        ["#guide-01", 255.4, 265], ["#guide-02", 265, 270], ["#guide-03", 270, 275], ["#guide-04", 275, 289.6],
+        ["#spot-09-summary", 290.3, 295], ["#spot-09-verify", 295, 299.6]
+      ];
+      spotlightBeats.forEach(([selector, start, end]) => {
+        tl.set(selector, { opacity: 1, x: 26, y: 18, scale: 0.985 }, start);
+        tl.to(selector,
+          { opacity: 1, x: 0, y: 0, scale: 1, duration: 0.36, ease: "power4.out" },
+          start
+        );
+        tl.to(selector,
+          { opacity: 0, x: -24, y: -12, duration: 0.24, ease: "power2.in" },
+          end - 0.24
+        );
+      });
+      captions.forEach((_, index) => {
+        const start = index * 5;
+        tl.fromTo(`#caption-${String(index + 1).padStart(2, "0")}`,
+          { opacity: 1, y: 18, scale: 0.98 },
+          { opacity: 1, y: 0, scale: 1, duration: 0.28, ease: "back.out(1.25)", immediateRender: false },
+          start
+        );
+      });
+      window.__timelines["main"] = tl;
+
+      // <seams:auto> — generated by seam-stamp.mjs from ledger.json; do not hand-edit.
+      // Regenerate: node <motion-doctrine>/scripts/seam-stamp.mjs --ledger ledger.json --write index.html
+      gsap.set("#scene-01", { autoAlpha: 1, xPercent: 0, yPercent: 0, scale: 1, filter: "blur(0px)", transformOrigin: "50% 50%" });
+      gsap.set(["#scene-02","#scene-03","#scene-04","#scene-05","#scene-06","#scene-07","#scene-08","#scene-09"], { autoAlpha: 0, xPercent: 0, yPercent: 0, scale: 1, filter: "blur(0px)", transformOrigin: "50% 50%" });
+      
+      // SEAM — 01→02 : cut-the-curve LEFT (cut @25)
+      tl.to("#scene-01", { xPercent: -12, autoAlpha: 0, duration: 0.32, ease: "power3.in" }, 24.68);
+      tl.set("#scene-01", { autoAlpha: 0 }, 25);
+      tl.fromTo("#scene-02", { xPercent: 10, autoAlpha: 0.35 }, { xPercent: 0, autoAlpha: 1, duration: 0.32, ease: "power4.out", immediateRender: false }, 25);
+      
+      // SEAM — 02→03 : cut-the-curve LEFT (cut @60)
+      tl.to("#scene-02", { xPercent: -12, autoAlpha: 0, duration: 0.32, ease: "power3.in" }, 59.68);
+      tl.set("#scene-02", { autoAlpha: 0 }, 60);
+      tl.fromTo("#scene-03", { xPercent: 10, autoAlpha: 0.35 }, { xPercent: 0, autoAlpha: 1, duration: 0.32, ease: "power4.out", immediateRender: false }, 60);
+      
+      // SEAM — 03→04 : cut-the-curve LEFT (cut @100)
+      tl.to("#scene-03", { xPercent: -12, autoAlpha: 0, duration: 0.32, ease: "power3.in" }, 99.68);
+      tl.set("#scene-03", { autoAlpha: 0 }, 100);
+      tl.fromTo("#scene-04", { xPercent: 10, autoAlpha: 0.35 }, { xPercent: 0, autoAlpha: 1, duration: 0.32, ease: "power4.out", immediateRender: false }, 100);
+      
+      // SEAM — 04→05 : cut-the-curve LEFT (cut @155)
+      tl.to("#scene-04", { xPercent: -12, autoAlpha: 0, duration: 0.32, ease: "power3.in" }, 154.68);
+      tl.set("#scene-04", { autoAlpha: 0 }, 155);
+      tl.fromTo("#scene-05", { xPercent: 10, autoAlpha: 0.35 }, { xPercent: 0, autoAlpha: 1, duration: 0.32, ease: "power4.out", immediateRender: false }, 155);
+      
+      // SEAM — 05→06 : cut-the-curve LEFT (cut @205)
+      tl.to("#scene-05", { xPercent: -12, autoAlpha: 0, duration: 0.32, ease: "power3.in" }, 204.68);
+      tl.set("#scene-05", { autoAlpha: 0 }, 205);
+      tl.fromTo("#scene-06", { xPercent: 10, autoAlpha: 0.35 }, { xPercent: 0, autoAlpha: 1, duration: 0.32, ease: "power4.out", immediateRender: false }, 205);
+      
+      // SEAM — 06→07 : cut-the-curve LEFT (cut @225)
+      tl.to("#scene-06", { xPercent: -12, autoAlpha: 0, duration: 0.32, ease: "power3.in" }, 224.68);
+      tl.set("#scene-06", { autoAlpha: 0 }, 225);
+      tl.fromTo("#scene-07", { xPercent: 10, autoAlpha: 0.35 }, { xPercent: 0, autoAlpha: 1, duration: 0.32, ease: "power4.out", immediateRender: false }, 225);
+      
+      // SEAM — 07→08 : cut-the-curve LEFT (cut @255)
+      tl.to("#scene-07", { xPercent: -12, autoAlpha: 0, duration: 0.32, ease: "power3.in" }, 254.68);
+      tl.set("#scene-07", { autoAlpha: 0 }, 255);
+      tl.fromTo("#scene-08", { xPercent: 10, autoAlpha: 0.35 }, { xPercent: 0, autoAlpha: 1, duration: 0.32, ease: "power4.out", immediateRender: false }, 255);
+      
+      // SEAM — 08→09 : cut-the-curve LEFT (cut @290)
+      tl.to("#scene-08", { xPercent: -12, autoAlpha: 0, duration: 0.32, ease: "power3.in" }, 289.68);
+      tl.set("#scene-08", { autoAlpha: 0 }, 290);
+      tl.fromTo("#scene-09", { xPercent: 10, autoAlpha: 0.35 }, { xPercent: 0, autoAlpha: 1, duration: 0.32, ease: "power4.out", immediateRender: false }, 290);
+      
+      // </seams:auto>
+    </script>
+  </body>
+</html>
