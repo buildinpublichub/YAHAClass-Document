@@ -1,6 +1,6 @@
 # Claude Code Output Style 示例
 
-视频《你以为Fable 5降智了？我实测在ClaudeCode加一行设置，AI瞬间说人话》配套文件。
+配套视频：[你以为Fable 5降智了？我实测在ClaudeCode加一行设置，AI瞬间说人话](https://youtu.be/nlNDzop6tBw)
 Claude Code 实测版本：2.1.231。
 
 ## 文件说明

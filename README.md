@@ -12,7 +12,7 @@
 | [2 个超实用 Claude Code Hooks：自动环境设置 ＋ 手机推播通知【进阶篇】](https://youtu.be/io0B2AjXfmU) | 2026-02-19 | [`ClaudeCode Hooks.md`](./ClaudeCode%20Hooks.md) |
 | [我给 Claude Code 挂了顾问，结果它一次都没出手过｜advisor 实测＋官方没提的坑](https://youtu.be/MCR1CVqQe3s) | 2026-07-13 | [`advisor/`](./advisor) |
 | [AI做的网站为什么全都长得不一样？我用Claude Design一次搞定网站+广告+PPT+合同](https://youtu.be/1Jl1scURsIA) | 2026-07-16 | [`claude-design/`](./claude-design) |
-| 你以为Fable 5降智了？我实测在ClaudeCode加一行设置，AI瞬间说人话（链接待发布后补） | 2026-08 | [`claude-output-style/`](./claude-output-style) |
+| [你以为Fable 5降智了？我实测在ClaudeCode加一行设置，AI瞬间说人话](https://youtu.be/nlNDzop6tBw) | 2026-08-23 | [`claude-output-style/`](./claude-output-style) |
 
 ## 📂 各目录内容说明
 
