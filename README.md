@@ -12,6 +12,7 @@
 | [2 个超实用 Claude Code Hooks：自动环境设置 ＋ 手机推播通知【进阶篇】](https://youtu.be/io0B2AjXfmU) | 2026-02-19 | [`ClaudeCode Hooks.md`](./ClaudeCode%20Hooks.md) |
 | [我给 Claude Code 挂了顾问，结果它一次都没出手过｜advisor 实测＋官方没提的坑](https://youtu.be/MCR1CVqQe3s) | 2026-07-13 | [`advisor/`](./advisor) |
 | [AI做的网站为什么全都长得不一样？我用Claude Design一次搞定网站+广告+PPT+合同](https://youtu.be/1Jl1scURsIA) | 2026-07-16 | [`claude-design/`](./claude-design) |
+| 你以为Fable 5降智了？我实测在ClaudeCode加一行设置，AI瞬间说人话（链接待发布后补） | 2026-08 | [`claude-output-style/`](./claude-output-style) |
 
 ## 📂 各目录内容说明
 
@@ -21,6 +22,7 @@
 - **[`ClaudeCode Hooks.md`](./ClaudeCode%20Hooks.md)** — Claude Code Hooks 进阶篇的完整配置代码：自动环境设置（PATH/NVM）+ 手机推播通知（ntfy.sh / macOS / Windows）。
 - **[`advisor/`](./advisor)** — 实测 Claude Code 顾问模式（advisor）用的「秒杀」demo：一个故意藏了 race condition、会超卖的商品下单 API（`server.js`）＋ 50 并发压测脚本（`stress.js`）。拿它去看模型到底会不会找顾问升级决策。
 - **[`claude-design/`](./claude-design)** — Claude Design 完整实战的全部提示词：从设计系统出发做出网站、视频广告、PPT、合同，再交给 Claude Code 整合部署到 Netlify 真实收单。按视频章节整理成 7 份文件（logo / 字体配色 / 设计系统 / 网站 / 广告分镜 / PPT合同 / 整合部署），含视频里踩过的所有坑。
+- **[`claude-output-style/`](./claude-output-style)** — Claude Code 输出风格（output style）实测配套：对比用的 11 行小函数 `app.py`、手写的 ELI5「讲人话」风格和用 `/branch` 让 Claude 自己生成的「成因与修法」审查风格（`.claude/output-styles/`），以及视频里用到的全部提示词、`keep-coding-instructions` 要点和「手改配置要 `/clear`」的坑。
 
 ---
 
