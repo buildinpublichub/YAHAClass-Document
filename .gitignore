@@ -1,0 +1,23 @@
+# 视频脚本 / 录制计划 / SEO 方案等内部文件，不进仓库
+*脚本*.md
+*腳本*.md
+*recording-plan*
+*录制计划*
+*錄製計劃*
+seo.md
+*.srt
+
+# 密钥与本地环境
+.env
+.env.*
+*.pem
+*.key
+credentials*.json
+service-account*.json
+token.json
+
+# 系统 / 缓存
+.DS_Store
+__pycache__/
+*.pyc
+node_modules/
