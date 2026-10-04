@@ -14,6 +14,7 @@
 | [AI做的网站为什么全都长得不一样？我用Claude Design一次搞定网站+广告+PPT+合同](https://youtu.be/1Jl1scURsIA) | 2026-07-16 | [`claude-design/`](./claude-design) |
 | [你以为Fable 5降智了？我实测在ClaudeCode加一行设置，AI瞬间说人话](https://youtu.be/nlNDzop6tBw) | 2026-08-23 | [`claude-output-style/`](./claude-output-style) |
 | [别再抄新闻二手数据了！我让ClaudeCode接上AIsa直连Similarweb官方接口，把台湾四大电商流量全扒了一遍](https://youtu.be/ydChMfjP8ms) | 2026-09-10 | [`aisa-gtm-similarweb/`](./aisa-gtm-similarweb) |
+| [rm -rf 删了什么、上下文还剩多少，Claude Code 都不告诉你？装个 Mod 全看得见｜2026 插件教程](https://youtu.be/0RTUj16alAU) | 待发布 | [`claude-code-mods/`](./claude-code-mods) |
 
 ## 📂 各目录内容说明
 
@@ -25,6 +26,8 @@
 - **[`claude-design/`](./claude-design)** — Claude Design 完整实战的全部提示词：从设计系统出发做出网站、视频广告、PPT、合同，再交给 Claude Code 整合部署到 Netlify 真实收单。按视频章节整理成 7 份文件（logo / 字体配色 / 设计系统 / 网站 / 广告分镜 / PPT合同 / 整合部署），含视频里踩过的所有坑。
 - **[`claude-output-style/`](./claude-output-style)** — Claude Code 输出风格（output style）实测配套：对比用的 11 行小函数 `app.py`、手写的 ELI5「讲人话」风格和用 `/branch` 让 Claude 自己生成的「成因与修法」审查风格（`.claude/output-styles/`），以及视频里用到的全部提示词、`keep-coding-instructions` 要点和「手改配置要 `/clear`」的坑。
 - **[`aisa-gtm-similarweb/`](./aisa-gtm-similarweb)** — ClaudeCode 通过 AIsa 的 GTM MCP 直连 Similarweb 官方 API 做竞品分析的全部输入：接入命令、给 Agent 的每段 prompt（含中途回复原文）、项目 `CLAUDE.md` 规则、接口检查脚本 `check.sh`，以及 Agent 实际产出的三份报告（台湾四大电商流量拆解 / Heptabase 竞品分析 / AI 搜索可见度审计）和视频里踩过的 6 个坑。
+
+- **[`claude-code-mods/`](./claude-code-mods)** — Claude Code Mods（函数式插件）配套：跑官方示例 Blast Radius / Replay Theater 用的测试仓库（greet 小项目 + 一键建 `build/` 的 `setup.sh`），以及从零写的上下文“天气预报”横栏 Token Weather 完整插件（清单、入口代码、`$.state` 类型声明、测试），附安装成本地插件市场的步骤。
 
 ---
 
