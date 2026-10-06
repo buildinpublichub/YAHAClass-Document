@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="stage-size" content="__SIZE__">
+<title>__TITLE__ · 成片</title>
+<style>
+__FONTS__
+/* ===== 预览外壳（只在浏览器预览时出现；渲染时隐藏） ===== */
+:root{--ui-bg:#0b0b0b;--ui-panel:#161616;--ui-line:#2a2d33;--ui-text:#eeeeea;--ui-muted:#8b929c;--ui-acc:#d87756}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ui-bg);color:var(--ui-text);font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+.shell{max-width:1280px;margin:0 auto;padding:14px 16px 28px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.btn{border:1px solid var(--ui-line);background:var(--ui-panel);color:var(--ui-text);border-radius:8px;padding:7px 13px;font:inherit;cursor:pointer}
+.btn:hover{border-color:var(--ui-muted)}
+.btn.pri{background:var(--ui-acc);border-color:var(--ui-acc);color:#111;font-weight:600}
+.sp{flex:1}
+.info{font-variant-numeric:tabular-nums;color:var(--ui-muted)}
+.info b{color:var(--ui-text);font-weight:600}
+.wrap{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:10px;border:1px solid var(--ui-line);background:#000}
+body.portrait .wrap{aspect-ratio:9/16;max-width:calc(78vh * 9 / 16);margin:0 auto}
+body.portrait.bare .wrap{max-width:none;margin:0}
+.tl{position:relative;height:24px;margin-top:10px;display:flex;border-radius:5px;overflow:hidden;cursor:pointer}
+.tl span{height:100%;border-right:1px solid var(--ui-bg);background:#23262b}
+.tl span.alt{background:#2c3036}
+.tl span.miss{background:#5a2a33}
+.tl span.cur{background:var(--ui-acc)!important}
+.tl i{position:absolute;top:0;bottom:0;width:2px;background:#fff;pointer-events:none}
+.sub{margin-top:8px;padding:9px 14px;background:var(--ui-panel);border:1px solid var(--ui-line);border-radius:8px;min-height:42px;font-size:15px}
+.sub small{color:var(--ui-muted);margin-right:8px;font-variant-numeric:tabular-nums}
+.sub .prop{display:block;color:var(--ui-muted);font-size:13px;margin-top:4px}
+.help{color:var(--ui-muted);font-size:12px;margin-top:8px}
+kbd{border:1px solid var(--ui-line);border-bottom-width:2px;border-radius:4px;padding:0 5px;font:12px ui-monospace,Menlo,monospace;background:var(--ui-panel)}
+@media (max-width:700px){.shell{padding:12px 16px}}
+body.bare .bar,body.bare .tl,body.bare .sub,body.bare .help{display:none}
+body.bare .shell{max-width:none;padding:0}body.bare .wrap{border:0;border-radius:0}
+
+/* ===== 舞台：暗色示意风格（规范 v2 第 4 节） ===== */
+.stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;overflow:hidden;
+  --bg:#0d0d0d;--win:#1d2025;--winbar:#181a1e;--card:#2c3139;--card2:#23272d;--edge:#454b54;
+  --l1:#9aa2ad;--l2:#646c76;--or:#d87756;--tx:#f2f2ee;--mut:#aab1ba;--ok:#a6c985;--err:#dd6b80;--warn:#e3b341;
+  --pink:#d87756;--yellow:#e3b341;--blue:#9fb4cf;--teal:#a6c985;--red:#dd6b80;--agent:#d87756;--person-ic:#9fb4cf;--gtrack:#4a5059;
+  background:var(--bg);color:var(--tx);font-family:"NSC",sans-serif;font-size:26px;line-height:1.35}
+.stage.v{width:1080px;height:1920px}
+.scr{position:absolute;inset:0}
+.a{position:absolute}
+.stage svg{overflow:visible}
+/* 容器 */
+.card{background:var(--card);border:1px solid var(--edge);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.win{background:var(--win);border:1px solid var(--edge);border-radius:14px;box-shadow:0 14px 40px rgba(0,0,0,.45);overflow:hidden}
+.win>.wbar{height:54px;background:var(--winbar);border-bottom:1px solid var(--edge);display:flex;align-items:center;gap:10px;padding:0 20px;font:500 28px/1 "NSC";color:var(--mut)}
+.win>.wbar i{width:14px;height:14px;border-radius:50%;background:#3a3d42;flex:none}
+.win>.wbar i:nth-child(1){background:#ff5f57}.win>.wbar i:nth-child(2){background:#febc2e}.win>.wbar i:nth-child(3){background:#28c840}
+.win>.wbar b{flex:1;text-align:center;font-weight:500;margin-right:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.win>.wbody{position:absolute;left:0;right:0;top:54px;bottom:0}
+.chead{display:flex;align-items:center;gap:14px;font:600 32px/1.2 "NSC";color:var(--tx)}
+.chead svg{width:1.05em;height:1.05em;flex:none}
+/* 胶囊与标签 */
+.pill{display:inline-flex;align-items:center;gap:.36em;white-space:nowrap;background:var(--card);border:1px solid var(--edge);border-radius:999px;padding:.36em .72em;font:500 32px/1 "NSC";color:var(--tx)}
+.pill svg{width:1em;height:1em;flex:none}
+.pill.or{background:rgba(216,119,86,.16);border-color:rgba(216,119,86,.55);color:#f0a98f}
+.pill.ok{background:rgba(166,201,133,.13);border-color:rgba(166,201,133,.5);color:var(--ok)}
+.pill.err{background:rgba(221,107,128,.14);border-color:rgba(221,107,128,.55);color:var(--err)}
+.pill.warn{background:rgba(227,179,65,.13);border-color:rgba(227,179,65,.5);color:var(--warn)}
+.pill.mut{color:var(--mut)}
+.lbl{font:500 26px/1.2 "NSC";color:var(--mut);white-space:nowrap}
+.lbl.tx{color:var(--tx)}
+.big{font:600 64px/1 "NSC";font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.mono{font-family:"JBM",monospace}
+/* 骨架横条 */
+.sk{height:12px;border-radius:6px;background:var(--l2)}
+.sk.l1{background:var(--l1)}.sk.or{background:var(--or)}.sk.ok{background:var(--ok)}.sk.err{background:var(--err)}.sk.warn{background:var(--warn)}
+/* 风格化终端 */
+.term .wbody{padding:22px 28px;font:400 26px/1.7 "JBM",monospace;color:var(--tx)}
+.term .ln{white-space:pre;overflow:hidden}
+.term .ln .p{color:var(--mut)}.term .ln .o{color:var(--or)}.term .ln .g{color:var(--ok)}.term .ln .r{color:var(--err)}.term .ln .m{color:var(--mut)}
+.caret{display:inline-block;width:.55em;height:1.05em;background:var(--tx);vertical-align:-.18em}
+/* 图标与状态徽标 */
+.ico{display:grid;place-items:center}
+.ico svg{width:100%;height:100%}
+.badge{border-radius:50%;display:grid;place-items:center;border:2px solid var(--l2);background:var(--card)}
+.badge svg{width:100%;height:100%}
+.badge.ok{background:var(--ok);border-color:var(--ok)}.badge.err{background:var(--err);border-color:var(--err)}
+.badge.warn{background:transparent;border:0}.badge.or{background:var(--or);border-color:var(--or)}
+.badge.idle{background:transparent}
+/* 代理与人 */
+.agent{border-radius:16px;background:var(--card);border:1px solid var(--edge);display:grid;place-items:center}
+.agent svg{width:58%;height:58%}
+.agent.bare{background:transparent;border:0}
+.person{border-radius:50%;background:#2c3a4d;border:2px solid #45576f;display:grid;place-items:center}
+.person>span{width:56%;height:56%}
+.person svg{width:100%;height:100%}
+/* 容量条、进度条 */
+.meter{background:#15171a;border:1px solid var(--edge);border-radius:999px;overflow:hidden}
+.meter>i{display:block;height:100%;width:0;background:var(--l1);border-radius:999px}
+/* 焦点：被降暗 / 模糊的元素 */
+.hl{outline:2px solid var(--or);outline-offset:4px}
+/* 流程节点 */
+.node{border-radius:16px;background:var(--card);border:1px solid var(--edge);display:grid;place-items:center;color:var(--mut)}
+.node svg{width:46%;height:46%}
+/* 章节进度条 */
+.chap{height:8px;border-radius:4px;background:var(--l2);overflow:hidden}
+.chap>i{display:block;height:100%;width:0;background:var(--or)}
+
+/* ===== 亮色主题（Gumroad 官网风格）：build_film.py --theme light 时 .stage 加 .light =====
+   米白底、纯黑粗描边、硬投影、粉色 = 当前（色块用 --pink，线条 / 文字用深一档的 --or），平涂色块，不用渐变、发光、模糊阴影 */
+.stage.light{--bg:#f4f4f0;--win:#ffffff;--winbar:#ffffff;--card:#ffffff;--card2:#e4e4dc;--edge:#000000;
+  --l1:#242423;--l2:#b8b8b0;--or:#e84fc8;--tx:#000000;--mut:#3d3d3a;--ok:#23a094;--err:#dc341e;--warn:#ffc900;
+  --pink:#ff90e8;--yellow:#ffc900;--blue:#90a8ed;--teal:#23a094;--red:#dc341e;--agent:#000000;--person-ic:#000000;--gtrack:#d6d6ce}
+.stage.light::before{content:"";position:absolute;right:-170px;bottom:-190px;width:480px;height:480px;border-radius:50%;background:var(--yellow);border:4px solid #000}
+.stage.light::after{content:"";position:absolute;right:250px;bottom:40px;width:74px;height:74px;border-radius:50%;background:var(--pink);border:4px solid #000}
+.stage.light.v::before{right:-150px;top:-170px;bottom:auto}.stage.light.v::after{right:230px;top:60px;bottom:auto}
+.stage.light .scr{z-index:1}
+.stage.light .card{border:3px solid #000;border-radius:14px;box-shadow:6px 6px 0 #000}
+.stage.light .win{border:3px solid #000;border-radius:14px;box-shadow:8px 8px 0 #000}
+.stage.light .win>.wbar{border-bottom:3px solid #000;color:#000;font-weight:700}
+.stage.light .win>.wbar i{border:2px solid #000}
+.stage.light .win>.wbar i:nth-child(1){background:var(--pink)}.stage.light .win>.wbar i:nth-child(2){background:var(--yellow)}.stage.light .win>.wbar i:nth-child(3){background:var(--blue)}
+.stage.light .chead{font-weight:800;color:#000}
+.stage.light .pill{background:#fff;border:3px solid #000;color:#000;font-weight:700}
+.stage.light .pill.or{background:var(--pink);border-color:#000;color:#000}
+.stage.light .pill.ok{background:var(--teal);border-color:#000;color:#fff}
+.stage.light .pill.err{background:var(--red);border-color:#000;color:#fff}
+.stage.light .pill.warn{background:var(--yellow);border-color:#000;color:#000}
+.stage.light .pill.mut{background:#fff;color:#3d3d3a}
+.stage.light .lbl{color:#3d3d3a;font-weight:600}.stage.light .lbl.tx{color:#000;font-weight:700}
+.stage.light .big{font-weight:800}
+.stage.light .caret{background:#000}
+.stage.light .badge{border:3px solid #000;background:#fff}
+.stage.light .badge.ok{background:var(--teal);border-color:#000}.stage.light .badge.err{background:var(--red);border-color:#000}.stage.light .badge.or{background:var(--pink);border-color:#000}
+.stage.light .badge.warn{border:0;background:transparent}.stage.light .badge.idle{background:#fff}
+.stage.light .agent{border:3px solid #000;box-shadow:4px 4px 0 #000}.stage.light .agent.bare{border:0;box-shadow:none}
+.stage.light .person{background:var(--blue);border:3px solid #000}
+.stage.light .meter{background:#fff;border:3px solid #000}
+.stage.light .node{border:3px solid #000;box-shadow:5px 5px 0 #000;color:#000}
+.stage.light .chap>i{background:var(--pink)}
+.stage.light .hl{outline:3px solid #000}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="bar">
+    <button class="btn pri" id="play">▶ 播放</button>
+    <button class="btn" id="prev">← 上一场景</button>
+    <button class="btn" id="next">下一场景 →</button>
+    <button class="btn" id="rep">↺ 本场景</button>
+    <span class="info" id="info"></span>
+    <span class="sp"></span>
+  </div>
+  <div class="wrap" id="wrap"><div class="stage" id="stage"></div></div>
+  <div class="tl" id="tl"><i id="ph"></i></div>
+  <div class="sub" id="sub"></div>
+  <div class="help"><kbd>空格</kbd> 播放/暂停　<kbd>←</kbd><kbd>→</kbd> 上一/下一场景　<kbd>R</kbd> 重播本场景　点时间轴可跳转。下方旁白与视觉命题只用于预览审阅，不会进入成片。</div>
+</div>
+<audio id="au" src="__AUDIO__" preload="none"></audio>
+<script>
+const D=__DATA__;
+/* ===== 画布 ===== */
+const V=D.aspect==="9:16",VW=V?1080:1920,VH=V?1920:1080,LIGHT=D.theme==="light";
+// 安全区：横版四周留边；竖版上方留平台顶栏、下方和右侧留标题/评论按钮
+const SAFE=V?{x0:90,x1:970,y0:280,y1:1520}:{x0:120,x1:1800,y0:90,y1:990};
+const CX=V?530:960,CY=V?900:540;
+
+/* ===== 时间工具：画面完全由时间 t 算出，可任意跳转、逐帧一致 ===== */
+const LEAD=0.2,TOTAL=D.total;
+const cl=(x,a=0,b=1)=>Math.min(b,Math.max(a,x));
+const P=(t,s,d)=>d<=0?(t>=s?1:0):cl((t-s)/d);
+const lerp=(a,b,p)=>a+(b-a)*p;
+const eo=x=>1-Math.pow(1-x,3);                                    // 减速
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;                 // 先加速后减速
+const es=x=>{const c1=1.1,c3=c1+1;return 1+c3*Math.pow(x-1,3)+c1*Math.pow(x-1,2)}; // 轻微回弹（克制）
+const S=(n,dt=0)=>D.subs[n][0]+dt;                                 // 第 n 句字幕开始（dt 为句内偏移秒数）
+const SE=n=>D.subs[n][1];                                          // 第 n 句字幕结束
+const N=n=>Math.round(n).toLocaleString("en-US");
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+// 时间段内的逐项时刻：从 s 开始，每项间隔 gap
+const stagger=(s,i,gap=.18)=>s+i*gap;
+
+/* ===== 元素 ===== */
+const px=v=>typeof v==="number"?v+"px":v;
+function E(p,cls="",html="",css){const e=document.createElement("div");if(cls)e.className=cls;if(html)e.innerHTML=html;if(css)Object.assign(e.style,css);p.appendChild(e);return e}
+// 绝对定位元素：pos 里数字自动加 px（无单位的值写成字符串，如 opacity:"0"）
+function box(p,cls,html,pos={}){const e=E(p,"a "+cls,html);const m={x:"left",y:"top",w:"width",h:"height"};for(const k in pos)e.style[m[k]||k]=px(pos[k]);return e}
+const NS="http://www.w3.org/2000/svg";
+function sv(p,tag,at={}){const e=document.createElementNS(NS,tag);for(const k in at)e.setAttribute(k,at[k]);p.appendChild(e);return e}
+function svgRoot(p){return sv(p,"svg",{width:VW,height:VH,style:"position:absolute;left:0;top:0;overflow:visible"})}
+
+/* ===== 图标（线性，stroke=currentColor） ===== */
+const IC={
+  check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',cross:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  warn:'<path d="M12 3.5l9.5 16.5h-19z" fill="currentColor" stroke="none"/><path d="M12 10v4.5M12 17.3v.2" stroke="#111" stroke-width="2.4"/>',
+  q:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 015 1c0 1.8-2.5 2-2.5 3.6M12 17.2v.2"/>',
+  lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 018 0v2.5"/>',
+  unlock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 017.5-1.9"/>',
+  doc:'<path d="M6 3h8l4 4v14H6z"/><path d="M14 3v4h4M9 12h6M9 16h6"/>',folder:'<path d="M3 6.5h6l2 2h10v10.5H3z"/>',
+  code:'<path d="M8.5 7L3.5 12l5 5M15.5 7l5 5-5 5"/>',eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  user:'<circle cx="12" cy="8.5" r="3.8"/><path d="M4.5 20.5c1.2-4 4.2-5.8 7.5-5.8s6.3 1.8 7.5 5.8"/>',
+  users:'<circle cx="9" cy="9" r="3.2"/><path d="M3 19.5c.9-3.3 3.3-4.8 6-4.8s5.1 1.5 6 4.8"/><circle cx="16.5" cy="8" r="2.7"/><path d="M16 13.3c2.4 0 4.3 1.3 5 4"/>',
+  search:'<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>',clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5.5l3.5 2"/>',
+  db:'<ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/>',
+  chat:'<path d="M4 5h16v11H9l-5 4z"/>',list:'<path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r="1"/><circle cx="4.5" cy="12" r="1"/><circle cx="4.5" cy="17.5" r="1"/>',
+  shield:'<path d="M12 3l7.5 3v6c0 4.5-3.2 7.7-7.5 9-4.3-1.3-7.5-4.5-7.5-9V6z"/>',gear:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/>',
+  globe:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"/>',
+  key:'<circle cx="8" cy="15" r="4.2"/><path d="M11 12l8.5-8.5M16.5 6.5l2.5 2.5M14 9l2 2"/>',box:'<path d="M12 2.5l8.5 4.7v9.6L12 21.5l-8.5-4.7V7.2z"/><path d="M3.5 7.2L12 12l8.5-4.8M12 12v9.5"/>',
+  bolt:'<path d="M13 2.5L5 13.5h6l-1 8 8-11h-6z"/>',play:'<path d="M7 4.5v15l12-7.5z"/>',stop:'<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>',
+  arrow:'<path d="M4 12h15M13.5 6.5L19 12l-5.5 5.5"/>',plus:'<path d="M12 5v14M5 12h14"/>',minus:'<path d="M5 12h14"/>',
+  phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.5"/><path d="M10.5 18.5h3"/>',monitor:'<rect x="2.5" y="4" width="19" height="13" rx="1.5"/><path d="M8.5 21h7M12 17v4"/>',
+  refresh:'<path d="M20 11a8 8 0 10-2.3 6.1M20 4.5V11h-6.5"/>',crown:'<path d="M3.5 8l4.5 4 4-6.5 4 6.5 4.5-4-2 10.5h-13z"/>',
+  hand:'<path d="M8 12.5V5.5a1.5 1.5 0 013 0V11M11 10.5V4a1.5 1.5 0 013 0v7M14 10.5V5.5a1.5 1.5 0 013 0v8c0 4.2-2.7 7-6.5 7-2.8 0-4.3-1.4-5.7-4L3.5 13a1.5 1.5 0 012.5-1.6L8 13.5"/>',
+  mail:'<rect x="3" y="5.5" width="18" height="13" rx="1.5"/><path d="M3.5 6.5l8.5 6.5 8.5-6.5"/>',cart:'<path d="M3 4h2.5l2.2 11h10.8l2-8H7"/><circle cx="9.5" cy="19" r="1.4"/><circle cx="17" cy="19" r="1.4"/>',
+  coin:'<circle cx="12" cy="12" r="9"/><path d="M14.8 8.8c-.6-.9-1.7-1.4-2.8-1.4-1.6 0-2.9.9-2.9 2.2 0 3.2 6 1.6 6 4.8 0 1.3-1.3 2.3-3 2.3-1.3 0-2.5-.6-3.1-1.6M12 5.5v1.9M12 16.7v1.8"/>',
+  book:'<path d="M4 4.5h6.5a2 2 0 012 2V20a1.8 1.8 0 00-1.8-1.8H4zM20 4.5h-6.5a2 2 0 00-2 2V20a1.8 1.8 0 011.8-1.8H20z"/>',
+  cal:'<rect x="3.5" y="5" width="17" height="15.5" rx="1.8"/><path d="M3.5 9.5h17M8 3v4M16 3v4"/>',flag:'<path d="M5 21V4M5 4.5h12l-2.5 4 2.5 4H5"/>'};
+// 图标 SVG 字符串；颜色跟随所在元素的 color
+const ico=(n,sw=2)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round">${IC[n]||IC.doc}</svg>`;
+// 代理图标：橙色放射状符号（通用执行者，不是任何品牌标志）
+// Claude 官方标志（取自 Claude 应用图标，potrace 描摹；品牌色 #D97757 属于标志本身，不随主题变）。旁白讲 Claude / Claude Code 时用 agent(p,{claude:1})
+const CLAUDE_LOGO='<svg style="width:100%;height:100%;display:block" viewBox="0 0 607.000000 607.000000"><g transform="translate(0.000000,607.000000) scale(0.100000,-0.100000)" fill="#D97757" stroke="none"><path d="M1623 6053 c-35 -12 -54 -30 -109 -105 -113 -154 -114 -156 -114 -212 0 -56 41 -227 69 -291 10 -22 49 -89 88 -150 39 -60 147 -243 240 -405 216 -374 195 -338 298 -525 49 -88 131 -236 183 -329 71 -129 92 -174 85 -185 -17 -27 -47 -23 -88 12 -22 18 -177 134 -345 257 -168 123 -433 322 -590 444 -380 294 -435 335 -463 345 -13 5 -76 13 -139 16 l-116 8 -63 -68 c-106 -111 -104 -106 -84 -233 10 -59 25 -120 33 -137 29 -58 84 -114 170 -173 48 -33 152 -108 232 -167 80 -59 244 -172 365 -252 739 -490 1075 -719 1108 -754 58 -62 4 -71 -263 -44 -368 38 -451 46 -695 60 -323 19 -941 61 -1097 75 -185 16 -204 14 -260 -21 -57 -37 -68 -54 -68 -106 0 -32 10 -52 64 -120 l65 -81 69 -16 c39 -9 163 -20 279 -26 114 -6 291 -15 393 -20 102 -5 462 -19 800 -30 338 -11 638 -24 665 -28 46 -7 50 -9 53 -37 2 -17 -3 -38 -10 -47 -7 -9 -119 -76 -248 -148 -417 -234 -501 -281 -735 -414 -278 -157 -704 -444 -739 -498 -9 -14 -18 -60 -22 -111 l-7 -88 54 -50 c30 -27 63 -52 74 -55 11 -3 76 2 144 10 89 11 134 22 163 38 22 13 236 151 476 308 240 156 585 381 765 498 298 194 357 227 357 194 0 -11 -37 -59 -151 -194 -53 -62 -158 -194 -234 -293 -141 -185 -492 -636 -696 -894 -63 -81 -141 -184 -171 -229 -52 -76 -57 -87 -63 -158 -9 -88 -11 -85 92 -139 68 -37 74 -38 113 -26 22 6 56 26 76 43 94 83 441 467 531 588 347 469 488 660 632 860 90 124 171 231 179 238 13 10 19 10 29 -1 10 -10 9 -25 -7 -82 -20 -68 -27 -108 -71 -410 -11 -77 -36 -216 -55 -310 -19 -93 -61 -303 -94 -465 -32 -162 -71 -347 -85 -410 -50 -221 -49 -200 -8 -302 33 -79 44 -96 92 -135 96 -78 99 -79 194 -43 112 43 156 86 171 170 3 19 13 109 21 200 15 170 49 536 85 905 11 116 29 311 40 435 11 124 25 235 30 248 17 39 40 21 95 -73 157 -271 237 -403 313 -520 47 -71 123 -188 170 -260 121 -185 443 -635 461 -644 29 -15 150 -33 176 -27 14 4 50 16 81 27 45 17 58 28 75 61 19 38 20 46 9 171 -7 73 -17 141 -22 152 -6 11 -166 253 -356 539 -348 521 -358 539 -316 553 6 2 29 -11 51 -29 70 -57 423 -357 538 -458 167 -147 669 -521 712 -530 48 -11 55 -7 97 54 35 52 36 55 26 101 -17 77 -34 108 -86 154 -27 25 -175 163 -329 307 -154 143 -305 283 -336 310 -125 110 -452 410 -569 523 -117 113 -124 121 -108 137 19 19 -18 26 528 -106 140 -33 472 -113 738 -175 l483 -115 152 78 152 77 12 55 c13 62 8 75 -65 174 -32 41 -153 134 -227 174 -12 6 -115 18 -230 27 -116 8 -292 22 -392 30 -101 8 -296 15 -435 15 -260 0 -662 30 -682 50 -17 17 4 25 174 64 153 35 301 70 556 132 56 13 236 51 400 85 371 75 783 175 806 196 9 8 33 55 52 104 34 83 35 93 25 135 -13 51 -20 57 -138 110 l-84 38 -136 -23 c-75 -12 -183 -31 -241 -41 -58 -10 -186 -33 -285 -50 -161 -29 -477 -94 -804 -166 -126 -28 -164 -28 -169 -1 -2 10 38 91 88 180 97 169 363 535 728 998 93 119 174 225 180 235 13 24 82 265 82 286 0 17 -155 257 -178 276 -11 8 -56 12 -143 12 l-126 0 -74 -59 c-175 -139 -562 -590 -994 -1159 -76 -101 -154 -197 -173 -213 -38 -33 -65 -35 -70 -3 -3 18 98 572 174 954 48 245 54 277 84 480 17 113 36 237 42 277 l12 72 -60 87 c-54 78 -65 89 -128 121 -79 40 -75 41 -187 -32 -81 -54 -85 -60 -137 -190 -41 -104 -48 -143 -72 -420 -30 -359 -54 -608 -80 -845 -16 -146 -36 -359 -45 -475 -9 -119 -21 -215 -28 -223 -19 -23 -41 17 -73 130 -29 103 -69 186 -481 998 -60 118 -192 402 -292 630 -225 509 -224 507 -407 535 -120 18 -147 18 -201 -2z"/></g></svg>';
+const AGENT_SVG='<svg viewBox="0 0 24 24" fill="none" style="stroke:var(--agent)" stroke-width="2.6" stroke-linecap="round">'+
+  [0,30,60,90,120,150].map(a=>{const r=a*Math.PI/180,x=Math.cos(r)*9.5,y=Math.sin(r)*9.5;return`<path d="M${(12-x).toFixed(2)} ${(12-y).toFixed(2)}L${(12+x).toFixed(2)} ${(12+y).toFixed(2)}"/>`}).join("")+'</svg>';
+const TONE={ok:"var(--ok)",err:"var(--err)",warn:"var(--warn)",or:"var(--or)",mut:"var(--mut)",tx:"var(--tx)",l1:"var(--l1)",l2:"var(--l2)"};
+
+/* ===== 组件（规范 4.4）：全部绝对定位，返回元素；x,y 为左上角 ===== */
+// 卡片：title 标题行（可带 icon），rows 骨架横条宽度数组（像素或 0–1 比例）
+function card(p,o={}){const c=box(p,"card","",{x:o.x,y:o.y,w:o.w||300,h:o.h||160});
+  let top=22;if(o.title||o.icon){const h=box(c,"chead",(o.icon?`<span style="color:${TONE[o.itone||"mut"]};display:grid">${ico(o.icon)}</span>`:"")+(o.title?`<span>${esc(o.title)}</span>`:""),{x:24,y:20,w:(o.w||300)-48});c.head=h;top=o.title?84:70}
+  c.rows=(o.rows||[]).map((w,i)=>box(c,"sk"+(i===0&&o.firstRow?" "+o.firstRow:""),"",{x:24,y:top+i*(o.gap||26),w:w<=1?Math.round(((o.w||300)-48)*w):w}));
+  return c}
+// 胶囊：tone = or/ok/err/warn/mut；icon 可选；size 字号（默认 32）；w 定宽（文字居中）
+function pill(p,text,o={}){const e=box(p,"pill"+(o.tone?" "+o.tone:""),(o.icon?ico(o.icon):"")+`<span>${esc(text)}</span>`,{x:o.x,y:o.y});if(o.size)e.style.fontSize=px(o.size);if(o.w){e.style.width=px(o.w);e.style.justifyContent="center"}return e}
+// 文字标签
+function lbl(p,text,o={}){const e=box(p,"lbl"+(o.tx?" tx":""),esc(text),{x:o.x,y:o.y});if(o.size)e.style.fontSize=px(o.size);if(o.color)e.style.color=TONE[o.color]||o.color;if(o.center){e.style.transform="translateX(-50%)";e.style.textAlign="center"}return e}
+// 窗口：title 居中；返回的 win.body 是内容区（相对定位用 box 放元素）
+function win(p,o={}){const w=box(p,"win","",{x:o.x,y:o.y,w:o.w||640,h:o.h||400});E(w,"wbar",`<i></i><i></i><i></i><b>${esc(o.title||"")}</b>`);w.body=E(w,"wbody");return w}
+// 风格化终端：term.line(html) 追加一行，返回行元素；行内可用 <span class="p|o|g|r|m">
+function term(p,o={}){const w=win(p,o);w.classList.add("term");w.line=(html,cls="")=>E(w.body,"ln "+cls,html);return w}
+// 骨架横条组：rows 为宽度数组
+function skel(p,o={}){return(o.rows||[]).map((w,i)=>box(p,"sk"+(o.tone?" "+o.tone:""),"",{x:o.x,y:o.y+i*(o.gap||24),w,h:o.h||12}))}
+// 代理 / 执行者图标
+function agent(p,o={}){const s=o.s||84,e=box(p,"agent"+(o.bare?" bare":""),o.claude?`<span style="display:block;width:64%;height:64%">${CLAUDE_LOGO}</span>`:AGENT_SVG,{x:o.x,y:o.y,w:s,h:s});if(o.label)e.label=lbl(p,o.label,{x:o.x+s/2,y:o.y+s+10,center:1,size:o.lsize});return e}
+// 人像
+function person(p,o={}){const s=o.s||72,e=box(p,"person",`<span style="color:var(--person-ic);display:grid">${ico("user",2)}</span>`,{x:o.x,y:o.y,w:s,h:s});if(o.label)e.label=lbl(p,o.label,{x:o.x+s/2,y:o.y+s+10,center:1,size:o.lsize});return e}
+// 图标块
+function icon(p,n,o={}){const s=o.s||40,e=box(p,"ico",ico(n,o.sw||2),{x:o.x,y:o.y,w:s,h:s});e.style.color=TONE[o.tone||"mut"]||o.tone;return e}
+// 状态徽标：state = ok / err / warn / or / idle（灰圈）/ q（问号）
+function badge(p,o={}){const s=o.s||34,e=box(p,"badge","",{x:o.x,y:o.y,w:s,h:s});setBadge(e,o.state||"idle");return e}
+function setBadge(e,state){if(e._st===state)return;e._st=state;e.className="a badge "+state;
+  e.innerHTML=state==="ok"?`<span style="color:#111;display:grid;width:62%;height:62%">${ico("check",3)}</span>`:
+    state==="err"?`<span style="color:#111;display:grid;width:62%;height:62%">${ico("cross",3)}</span>`:
+    state==="warn"?`<span style="color:var(--warn);display:grid;width:100%;height:100%">${ico("warn")}</span>`:
+    state==="q"?`<span style="color:var(--mut);display:grid;width:100%;height:100%">${ico("q")}</span>`:
+    state==="or"?`<span style="color:#111;display:grid;width:62%;height:62%">${ico("refresh",3)}</span>`:""}
+// 容量条 / 进度条：setMeter(m, 0–1, tone)
+function meter(p,o={}){const m=box(p,"meter","<i></i>",{x:o.x,y:o.y,w:o.w||300,h:o.h||12});m.fill=m.firstChild;if(o.vertical){m.fill.style.width="100%";m.fill.style.height="0";m.style.display="flex";m.style.alignItems="flex-end";m.vertical=1}return m}
+function setMeter(m,v,tone){v=cl(v);if(m.vertical)m.fill.style.height=(v*100)+"%";else m.fill.style.width=(v*100)+"%";if(tone)m.fill.style.background=TONE[tone]||tone}
+// 连线：pts 为 [[x,y],...]（折线）或 d 为 SVG path；返回 path 元素（带 len），用 draw() 控制生长
+function link(svg,o={}){const d=o.d||("M"+o.pts.map(q=>q.join(" ")).join(" L"));
+  const e=sv(svg,"path",{d,fill:"none",stroke:TONE[o.tone||"l2"]||o.tone,"stroke-width":o.w||2.5,"stroke-linecap":"round","stroke-linejoin":"round"});
+  if(o.dash)e.setAttribute("stroke-dasharray",o.dash);e.len=e.getTotalLength();if(!o.dash){e.style.strokeDasharray=e.len;e.style.strokeDashoffset=e.len}
+  if(o.arrow){e.head=sv(svg,"path",{d:"M-9 -6L0 0L-9 6",fill:"none",stroke:TONE[o.tone||"l2"]||o.tone,"stroke-width":o.w||2.5,"stroke-linecap":"round","stroke-linejoin":"round",opacity:0})}
+  return e}
+// 两点间的平滑曲线（水平方向出入）
+const curve=(x1,y1,x2,y2)=>{const m=(x1+x2)/2;return`M${x1} ${y1}C${m} ${y1} ${m} ${y2} ${x2} ${y2}`};
+const vcurve=(x1,y1,x2,y2)=>{const m=(y1+y2)/2;return`M${x1} ${y1}C${x1} ${m} ${x2} ${m} ${x2} ${y2}`};
+// 连线生长：从 s 开始 d 秒画完；返回进度
+// upto：只画到路径的这一比例（0–1），用于“没走到”“连线画到一半停住”
+function draw(e,t,s,d=.5,o={}){const p=eio(P(t,s-LEAD,d))*(o.upto??1);if(e.style.strokeDasharray){e.style.strokeDashoffset=e.len*(1-p);e.style.visibility=p>.001?"":"hidden"}else setFx(e,{op:p>0?Math.min(1,p*3):0});
+  if(e.head){const q=e.getPointAtLength(e.len*Math.max(p,.001)),q0=e.getPointAtLength(Math.max(0,e.len*p-2));const a=Math.atan2(q.y-q0.y,q.x-q0.x)*180/Math.PI;e.head.setAttribute("transform",`translate(${q.x} ${q.y}) rotate(${a})`);e.head.setAttribute("opacity",p>.02?1:0)}
+  return p}
+// 沿路径移动的点 / 元素：返回路径上 frac 处坐标
+const along=(e,frac)=>{const q=e.getPointAtLength(e.len*cl(frac));return[q.x,q.y]};
+function dot(svg,o={}){return sv(svg,"circle",{r:o.r||7,fill:TONE[o.tone||"tx"]||o.tone,cx:-99,cy:-99})}
+// 放置圆点；xy 为 null 时隐藏
+function place(c,xy){if(!xy){c.setAttribute("opacity",0);return}c.setAttribute("opacity",1);c.setAttribute("cx",xy[0]);c.setAttribute("cy",xy[1])}
+// 圆环：返回 {el, at(角度°)→[x,y]}；角度 0 在正上方，顺时针
+function ring(svg,o={}){const el=sv(svg,"circle",{cx:o.cx,cy:o.cy,r:o.r,fill:"none",stroke:TONE[o.tone||"l2"]||o.tone,"stroke-width":o.w||3});
+  const arc=sv(svg,"circle",{cx:o.cx,cy:o.cy,r:o.r,fill:"none",stroke:TONE[o.atone||"or"],"stroke-width":(o.w||3)+1,"stroke-linecap":"round",transform:`rotate(-90 ${o.cx} ${o.cy})`});
+  const C=2*Math.PI*o.r;arc.style.strokeDasharray=`0 ${C}`;
+  return{el,arc,at:a=>{const r=(a-90)*Math.PI/180;return[o.cx+o.r*Math.cos(r),o.cy+o.r*Math.sin(r)]},
+    // 橙色弧：从 a0° 到 a1°
+    setArc:(a0,a1)=>{const L=C*cl((a1-a0)/360);arc.style.strokeDasharray=`${L} ${C}`;arc.style.strokeDashoffset=-C*a0/360}}}
+// 闸门：竖杆 + 横杆 + 状态灯；gateSet(g, 抬起程度 0–1, 灯色 tone)
+function gate(p,o={}){const g=box(p,"","",{x:o.x,y:o.y,w:20,h:o.h||160});const H=o.h||160,L=o.arm||130;
+  const s=sv(g,"svg",{width:20,height:H,style:"position:absolute;left:0;top:0;overflow:visible"});
+  sv(s,"rect",{x:6,y:0,width:8,height:H,rx:3,fill:"var(--l1)"});
+  g.arm=sv(s,"rect",{x:-L,y:H*.42,width:L,height:9,rx:4,fill:"var(--l1)",style:`transform-box:view-box;transform-origin:10px ${H*.42+4.5}px`});
+  g.lamp=sv(s,"circle",{cx:10,cy:-16,r:9,fill:"var(--l2)"});if(o.label)g.label=lbl(p,o.label,{x:o.x+10,y:o.y+H+12,center:1});return g}
+function gateSet(g,up,tone){g.arm.style.transform=`rotate(${80*cl(up)}deg)`;g.lamp.setAttribute("fill",TONE[tone||"l2"]||tone)}
+// 半圆仪表：setGauge(g, 0–1, tone)
+function gauge(p,o={}){const r=o.r||70,g=box(p,"","",{x:o.x,y:o.y,w:r*2+20,h:r+20});const s=sv(g,"svg",{width:r*2+20,height:r+20});
+  const d=`M10 ${r+10}A${r} ${r} 0 0 1 ${r*2+10} ${r+10}`;sv(s,"path",{d,fill:"none",style:"stroke:var(--gtrack)","stroke-width":14,"stroke-linecap":"round"});
+  g.arc=sv(s,"path",{d,fill:"none",stroke:"var(--ok)","stroke-width":14,"stroke-linecap":"round"});g.len=Math.PI*r;g.arc.style.strokeDasharray=`0 ${g.len*2}`;
+  if(o.label)lbl(g,o.label,{x:r+10,y:r-14,center:1});return g}
+function setGauge(g,v,tone){g.arc.style.strokeDasharray=`${g.len*cl(v)} ${g.len*2}`;if(tone)g.arc.setAttribute("stroke",TONE[tone]||tone)}
+// 同质小块网格：返回格子数组（每格为 div）
+function grid(p,o={}){const out=[];for(let r=0;r<o.rows;r++)for(let c=0;c<o.cols;c++){const e=box(p,o.cls||"card","",{x:o.x+c*(o.cw+o.gap),y:o.y+r*(o.ch+o.gap),w:o.cw,h:o.ch});if(!o.cls)e.style.borderRadius="6px";out.push(e)}return out}
+
+// 不透明着色：tone 按 amt 比例混进卡片底色（高亮压在连线上时不会透出底下的线）；amt=0 恢复
+function tint(el,tone,amt=.2){if(!amt){el.style.background="";el.style.borderColor="";return el}
+  const c=TONE[tone]||tone;el.style.background=`color-mix(in srgb, ${c} ${Math.round(amt*100)}%, var(--card))`;el.style.borderColor=`color-mix(in srgb, ${c} 70%, var(--edge))`;return el}
+// 流程节点：圆角方块 + 图标 + 下方标签；setNode(n, state) state = idle / active（橙）/ ok / err / warn / dim
+function node(p,o={}){const s=o.s||110,n=box(p,"node",o.icon?ico(o.icon):(o.text?`<span style="font:600 ${Math.round(s*.34)}px/1 NSC">${esc(o.text)}</span>`:""),{x:o.x,y:o.y,w:s,h:s});if(o.round)n.style.borderRadius="50%";
+  if(o.label)n.label=lbl(p,o.label,{x:o.x+s/2,y:o.y+s+10,center:1,size:o.lsize,tx:1});return n}
+function setNode(n,state){if(n._ns===state)return;n._ns=state;const m={active:"or",ok:"ok",err:"err",warn:"warn"};
+  if(m[state]){tint(n,m[state],.22);n.style.color=TONE[m[state]]}else{tint(n,null,0);n.style.color=state==="dim"?"var(--l2)":""}}
+// 额度条 + 上限竖线：setQuota(q, 0–1+, tone)；超过 1 时条被截在上限处并变红
+function quota(p,o={}){const w=o.w||420,h=o.h||16,q=box(p,"","",{x:o.x,y:o.y,w:w+20,h:h+(o.label?40:0)});
+  if(o.label)q.label=lbl(q,o.label,{x:0,y:0,size:o.lsize});const y0=o.label?34:0;
+  q.track=box(q,"meter","<i></i>",{x:0,y:y0,w,h});q.fill=q.track.firstChild;
+  q.cap=box(q,"","",{x:w*(o.limit??1)-2,y:y0-12,w:4,h:h+24});q.cap.style.background="var(--l1)";q.cap.style.borderRadius="2px";q.limit=o.limit??1;return q}
+function setQuota(q,v,tone){const over=v>=q.limit-1e-6;q.fill.style.width=(Math.min(v,q.limit)*100)+"%";q.fill.style.background=TONE[tone||(over?"err":"or")];q.cap.style.background=over?"var(--err)":"var(--l1)";return over}
+// 分段柱 / 分段条：n 段，返回段数组；每段用 grow() 或 A() 控制出现，tint() 着色
+function stack(p,o={}){const n=o.n||4,g=o.gap??4,out=[];for(let i=0;i<n;i++){const e=o.vertical?box(p,"card","",{x:o.x,y:o.y+o.h-(i+1)*(o.h/n),w:o.w,h:o.h/n-g}):box(p,"card","",{x:o.x+i*(o.w/n),y:o.y,w:o.w/n-g,h:o.h});e.style.borderRadius="6px";e.style.boxShadow="none";out.push(e)}return out}
+// 章节进度条：n 段 + 播放头；setChap(c, 位置0–n) 已播放部分变橙；hop(svg, c, 从段i, 到段j) 生成播放头跳转的弧线（配合 draw / along）
+function chapters(p,o={}){const n=o.n||3,w=o.w||900,g=10,sw=(w-g*(n-1))/n,c=box(p,"","",{x:o.x,y:o.y,w,h:40});c.segs=[];
+  for(let i=0;i<n;i++){const e=box(c,"chap","<i></i>",{x:i*(sw+g),y:0,w:sw});c.segs.push(e);if(o.labels)lbl(c,o.labels[i],{x:i*(sw+g),y:22})}
+  c.head=box(c,"","",{x:-9,y:-6,w:20,h:20});c.head.style.borderRadius="50%";c.head.style.background="var(--tx)";c.sw=sw;c.g=g;c.ox=o.x;c.oy=o.y;return c}
+function setChap(c,pos){c.segs.forEach((e,i)=>e.firstChild.style.width=(cl(pos-i)*100)+"%");const i=Math.min(Math.floor(pos),c.segs.length-1),x=i*(c.sw+c.g)+cl(pos-i)*c.sw;setFx(c.head,{mx:x})}
+const chapX=(c,pos)=>{const i=Math.min(Math.floor(pos),c.segs.length-1);return c.ox+i*(c.sw+c.g)+cl(pos-i)*c.sw};
+function hop(svg,c,a,b,o={}){const x1=chapX(c,a),x2=chapX(c,b),y=c.oy,h=o.h||Math.min(160,Math.abs(x2-x1)*.35);return link(svg,{d:`M${x1} ${y}Q${(x1+x2)/2} ${y-h*2} ${x2} ${y}`,tone:o.tone||"or",w:2.5,dash:o.dash})}
+// 让任意元素沿路径飞行：元素以自身中心对准路径上的点；frac 0–1
+function follow(el,path,frac){const [x,y]=along(path,frac),bx=parseFloat(el.style.left)+(parseFloat(el.style.width)||el.offsetWidth)/2,by=parseFloat(el.style.top)+(parseFloat(el.style.height)||el.offsetHeight)/2;setFx(el,{mx:x-bx,my:y-by})}
+// 常驻元素：跨场景保持不动的导航 / 角标。当前场景 keep(el,"nav")，下一个构建写 keep:["nav"]（与 span 同级）并在同一位置重建它
+const keep=(el,key)=>{el.dataset.keep=key;return el};
+// 以 x,y 为中心放置（pill、lbl 等尺寸由内容决定的元素）
+const centered=e=>{e.style.transform="translate(-50%,-50%)";return e};
+// 确定性伪随机：同一 seed 永远得到同样的序列（画面必须逐帧一致，不能用 Math.random）
+const rnd=seed=>()=>((seed=(seed*16807)%2147483647)-1)/2147483646;
+// 追加 CSS（覆盖或补充样式时用；同一段只加一次）
+function addCSS(css){const k="css"+css.length+css.slice(0,40);if(document.getElementById(k))return;const e=document.createElement("style");e.id=k;e.textContent=css;document.head.appendChild(e)}
+
+/* ===== 动画（规范第 7 节）：都只由 t 决定，不累积状态 ===== */
+// 进场：k = rise（默认，上浮）/ fade / left / right / drop（从上落下）/ pop（轻微放大，克制）/ none
+// s 为字幕时间（用 S(n)），自动提前 LEAD 秒，说到这句时刚好到位。返回进度 0–1
+function A(el,t,s,o={}){const k=o.k||"rise",d=o.d||(k==="pop"?.45:.5),p=P(t,s-LEAD,d),e=k==="pop"?es(p):eo(p);
+  const m=o.dist||36;let dx=0,dy=0,sc=1;
+  if(k==="rise")dy=m*(1-e);else if(k==="left")dx=-m*1.6*(1-e);else if(k==="right")dx=m*1.6*(1-e);else if(k==="drop")dy=-m*1.6*(1-e);else if(k==="pop")sc=.9+.1*e;
+  setFx(el,{op:k==="none"?(p>0?1:0):cl(k==="pop"?p*2.2:e),dx,dy,sc});return p}
+// 退场：k = fade（默认）/ fall（掉落并变暗：表示被丢弃、遗漏）/ shrink
+function X(el,t,s,o={}){const k=o.k||"fade",d=o.d||.45,p=eio(P(t,s-LEAD,d));if(p<=0)return 0;
+  if(k==="fall")setFx(el,{op2:1-p*.75,fy:160*p*p,rot:(o.rot||8)*p,dim:.6*p});
+  else if(k==="shrink")setFx(el,{op2:1-p,sc2:1-.4*p});
+  else setFx(el,{op2:1-p});return p}
+// 降暗（退出焦点、被遗忘、看不到）：to 为最终亮度比例，默认 .35；back 为恢复亮度的时刻（可选）
+function dim(el,t,s,o={}){let p=eio(P(t,s-LEAD,o.d||.5));if(o.back!=null)p*=1-eio(P(t,o.back-LEAD,o.d||.4));setFx(el,{dim:(1-(o.to??.35))*p});return p}
+// 模糊 ↔ 清晰：from/to 为模糊像素
+function blur(el,t,s,o={}){const p=eio(P(t,s-LEAD,o.d||.5));setFx(el,{blur:lerp(o.from??8,o.to??0,p)});return p}
+// 移动：从 [x0,y0] 到 [x1,y1]（相对原位置的偏移），返回进度
+function mv(el,t,s,o={}){const p=eio(P(t,s-LEAD,o.d||.6)),f=o.from||[0,0],to=o.to||[0,0];setFx(el,{mx:lerp(f[0],to[0],p),my:lerp(f[1],to[1],p)});return p}
+// 缩放强调：到 to 倍
+function zoom(el,t,s,o={}){const p=eio(P(t,s-LEAD,o.d||.5));setFx(el,{sc2:lerp(o.from??1,o.to??1.08,p)});return p}
+// 所有效果合成到 opacity / translate / scale / rotate / filter，互不覆盖
+const FX0={op:1,op2:1,dx:0,dy:0,mx:0,my:0,fy:0,sc:1,sc2:1,rot:0,dim:0,blur:0,gx:1,gy:1,gxr:0};
+function setFx(el,o){const f=el._fx||(el._fx={...FX0});Object.assign(f,o);
+  // 「还没讲到 / 等待出场」= 50% 透明度，不用模糊滤镜（用户要求：模糊看着像失焦的截图）。blur 数值只折算成透明度：≥4px 即 50%
+  const bw=cl(f.blur/4);el.style.opacity=cl(f.op*f.op2*(1-.5*bw));el.style.translate=`${f.dx+f.mx}px ${f.dy+f.my+f.fy}px`;el.style.scale=String(f.sc*f.sc2);el.style.rotate=f.rot+"deg";
+  el.style.filter=(f.dim>0.001)?(LIGHT?`opacity(${1-f.dim*.72}) saturate(${1-f.dim*.8})`:`brightness(${1-f.dim}) saturate(${1-f.dim*.6})`):"none";// 亮色：降暗 = 褪色（压黑会把白卡变成深灰）
+  // 裁剪生长：gx 从左往右显露（gxr=1 时从右往左），gy 从下往上显露
+  el.style.clipPath=(f.gx<.999||f.gy<.999)?`inset(${(1-f.gy)*100}% ${f.gxr?0:(1-f.gx)*100}% 0 ${f.gxr?(1-f.gx)*100:0}%)`:"none"}
+// 每帧开头重置效果（build 中创建的元素无需手动调用；引擎在每帧 update 前自动重置本场景所有元素）
+function resetFx(root){root.querySelectorAll("*").forEach(e=>{if(e._fx)setFx(e,{...FX0,...(e._base||{})})})}
+// 固定效果：每帧重置后仍保留（如固定旋转 rot、固定降暗）。不要直接写 style.opacity / scale / rotate / translate / filter / clipPath，会被每帧重置覆盖
+function base(el,o){el._base={...(el._base||{}),...o};setFx(el,o);return el}
+// 生长：沿 x（默认）或 y 方向从 0 显露到完整，用于横条、柱子、切割线
+function grow(el,t,s,o={}){const p=eio(P(t,s-LEAD,o.d||.6))*(o.to??1);setFx(el,o.axis==="y"?{gy:p}:{gx:p,gxr:o.rev?1:0});return p}
+// 数字滚动：从 a 到 b，d 秒；fmt 可自定义
+function count(el,t,s,o={}){const p=eio(P(t,s-LEAD,o.d||1.2)),v=lerp(o.from||0,o.to,p);el.textContent=(o.pre||"")+(o.fmt?o.fmt(v):N(v))+(o.suf||"");return p}
+// 打字：cps 每秒字数；caret 是否显示光标
+function type(el,t,s,text,o={}){const cps=o.cps||30,n=Math.floor(text.length*P(t,s-LEAD,text.length/cps));
+  const blink=o.caret&&(n<text.length||Math.floor(t*2)%2===0);el.innerHTML=esc(text.slice(0,n))+(o.caret&&blink?'<span class="caret"></span>':"");return n/text.length}
+// 按时间切换文字（同一位置先后显示不同内容）
+function seqText(el,t,list){let i=-1;list.forEach((x,k)=>{if(t>=x[0]-LEAD)i=k});
+  if(i<0){el.style.opacity=0;return}if(el._i!==i){el.innerHTML=list[i][1];el._i=i}
+  const p=eo(P(t,list[i][0]-LEAD,.4));el.style.opacity=p}
+// 扫描高亮：返回当前扫描位置 0–1（用于逐行检查、读取）
+const scan=(t,s,d)=>eio(P(t,s-LEAD,d));
+// 状态切换：在时刻 s 之后切到 state（配合 setBadge / pill 类名）
+const after=(t,s)=>t>=s-LEAD;
+
+/* ===== 项目专属：场景构建（由 scenes.js / scenes/*.js 注入，每个文件各自封装） ===== */
+const SCENES={};
+__SCENES__
+
+/* ===== 场景与时间轴 ===== */
+const scenes=D.scenes;
+scenes.forEach(s=>{s.t0=S(s.a);s.t1=SE(s.b);s.enter=s.t0-LEAD-.1;s.steps=(s.sequence||[]).filter(x=>x.at).map(x=>S(x.at,x.dt||0))});
+scenes[0].enter=0;
+const screens=[];
+for(let i=0;i<scenes.length;){const s=scenes[i],c=SCENES[s.id];const span=c&&c.span?c.span:1;
+  screens.push({scenes:scenes.slice(i,i+span),custom:c,enter:s.enter,id:s.id});i+=span}
+screens.forEach((s,k)=>s.exit=screens[k+1]?screens[k+1].enter:1e9);
+// 缺少构建的场景：显示占位（视觉命题暗字），构建脚本会提示
+function placeholder(root,sc){const s=sc.scenes[0];
+  box(root,"lbl","未制作："+esc(sc.scenes.map(x=>x.id).join("、")),{x:SAFE.x0,y:SAFE.y0}).style.color="var(--err)";
+  const e=box(root,"lbl tx",esc(s.prop||""),{x:SAFE.x0,y:CY-40,w:SAFE.x1-SAFE.x0});e.style.whiteSpace="normal";e.style.fontSize="34px";
+  return t=>{}}
+
+/* ===== 渲染 ===== */
+const stage=document.getElementById("stage"),au=document.getElementById("au");
+if(V){stage.classList.add("v");document.body.classList.add("portrait")}
+if(LIGHT)stage.classList.add("light");
+let T=0,cur=-1,upd=null,root=null;
+function screenAt(t){let i=0;for(let k=0;k<screens.length;k++)if(t>=screens[k].enter)i=k;return i}
+function sceneAt(t){let i=0;for(let k=0;k<scenes.length;k++)if(t>=scenes[k].enter)i=k;return scenes[i]}
+function render(){
+  const i=screenAt(T),sc=screens[i];
+  if(i!==cur){if(root)root.remove();root=E(stage,"scr");upd=sc.custom?sc.custom.build(root,sc):placeholder(root,sc);cur=i}
+  resetFx(root);upd(T);
+  // 场景转场：出场前 0.3 秒淡出（如需与下一场景连续，用 span 合并成一个构建）
+  // 常驻元素：keep(el,"nav") 标记、且下一个构建声明了同名 keep:["nav"] 时，该元素不随场景淡出（用底色遮罩淡出其余内容）
+  const x=eio(P(T,sc.exit-.3,.3)),nk=(screens[i+1]&&screens[i+1].custom&&screens[i+1].custom.keep)||[];
+  const kept=nk.length?[...root.children].filter(e=>e.dataset&&nk.includes(e.dataset.keep)):[];
+  if(kept.length){root.style.opacity=1;if(!root._veil){root._veil=box(root,"","",{x:0,y:0,w:VW,h:VH});root._veil.style.background="var(--bg)";root._veil.style.zIndex=900}
+    root._veil.style.opacity=x;kept.forEach(e=>e.style.zIndex=1000)}
+  else{root.style.opacity=1-x;if(root._veil)root._veil.style.opacity=0}
+  ui(sceneAt(T));
+}
+
+/* ===== 预览界面 ===== */
+const fmt=t=>{t=Math.max(0,t);return Math.floor(t/60)+":"+(t%60).toFixed(1).padStart(4,"0")};
+const tl=document.getElementById("tl");
+scenes.forEach((s,k)=>{const e=document.createElement("span");e.className=(k%2?"alt":"")+(SCENES[s.id]||screens.some(x=>x.scenes.includes(s)&&x.custom)?"":" miss");
+  const nx=scenes[k+1]?scenes[k+1].enter:TOTAL;e.style.width=((nx-s.enter)/TOTAL*100)+"%";e.title=`${s.id} ${s.name}`;tl.insertBefore(e,document.getElementById("ph"))});
+tl.onclick=e=>{const b=tl.getBoundingClientRect();seek((e.clientX-b.left)/b.width*TOTAL)};
+let lastS=null,lastSub=-2;
+function ui(s){
+  if(s!==lastS){lastS=s;[...tl.querySelectorAll("span")].forEach((x,k)=>x.classList.toggle("cur",scenes[k]===s))}
+  document.getElementById("info").innerHTML=`<b>${esc(s.id)}</b> ${esc(s.name)}　${fmt(T)} / ${fmt(TOTAL)}`;
+  document.getElementById("ph").style.left=(T/TOTAL*100)+"%";
+  let ln=-1;for(const n in D.subs){const q=D.subs[n];if(T>=q[0]&&T<q[1]+.05){ln=+n;break}}
+  const key=ln+"|"+s.id;if(key!==lastSub){lastSub=key;
+    document.getElementById("sub").innerHTML=(ln>0?`<small>#${ln}　${fmt(D.subs[ln][0])}</small>${esc(D.subs[ln][2])}`:"<small>—</small>")+`<span class="prop">视觉命题：${esc(s.prop||"")}</span>`}
+}
+let playing=false,clock=null;
+function seek(t){T=cl(t,0,TOTAL);if(au.readyState>0)au.currentTime=T;if(playing)clock={w:performance.now(),t:T};render()}
+function play(){playing=true;document.getElementById("play").textContent="❚❚ 暂停";if(T>=TOTAL-.05)T=0;clock={w:performance.now(),t:T};
+  try{au.currentTime=T;const pr=au.play();if(pr)pr.catch(()=>{})}catch(e){}requestAnimationFrame(tick)}
+function pause(){playing=false;au.pause();document.getElementById("play").textContent="▶ 播放"}
+function tick(){if(!playing)return;
+  T=(!au.paused&&au.readyState>2&&Math.abs(au.currentTime-(clock.t+(performance.now()-clock.w)/1000))<.3)?au.currentTime:clock.t+(performance.now()-clock.w)/1000;
+  if(T>=TOTAL){T=TOTAL;render();pause();return}render();requestAnimationFrame(tick)}
+const jump=d=>{const s=sceneAt(T+.01),k=scenes.indexOf(s)+d;if(scenes[k])seek(Math.max(0,scenes[k].enter+.01))};
+document.getElementById("play").onclick=()=>playing?pause():play();
+document.getElementById("prev").onclick=()=>jump(-1);
+document.getElementById("next").onclick=()=>jump(1);
+document.getElementById("rep").onclick=()=>{seek(sceneAt(T+.01).enter+.01);if(!playing)play()};
+document.addEventListener("keydown",e=>{
+  if(e.code==="Space"){e.preventDefault();playing?pause():play()}
+  else if(e.key==="ArrowRight"){e.preventDefault();jump(1)}
+  else if(e.key==="ArrowLeft"){e.preventDefault();jump(-1)}
+  else if(e.key==="r"||e.key==="R")document.getElementById("rep").click()});
+function fit(){const w=document.getElementById("wrap"),W=w.clientWidth,H=w.clientHeight,s=Math.min(W/VW,H/VH);
+  stage.style.transform=`translate(${(W-VW*s)/2}px,${(H-VH*s)/2}px) scale(${s})`}
+new ResizeObserver(fit).observe(document.getElementById("wrap"));window.addEventListener("resize",fit);
+const q=new URLSearchParams(location.search);if(q.has("bare"))document.body.classList.add("bare");
+fit();seek(q.has("t")?+q.get("t"):0);
+// 渲染 / 截图接口：?render=1 时由脚本逐帧调用 __frame(t)
+if(q.has("render")){document.body.classList.add("bare");fit();window.__frame=t=>{T=t;render();return true};
+  window.__scenes=scenes.map((s,k)=>({id:s.id,name:s.name,enter:s.enter,t1:s.t1,exit:scenes[k+1]?scenes[k+1].enter:TOTAL,steps:s.steps}));
+  window.__total=TOTAL;window.__size=[VW,VH];
+  window.__ready=(document.fonts?document.fonts.ready:Promise.resolve()).then(()=>{cur=-1;T=0;render();return true})}
+if(document.fonts)document.fonts.ready.then(()=>{cur=-1;render()});
+</script>
+</body>
+</html>

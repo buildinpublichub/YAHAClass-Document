@@ -1,0 +1,7 @@
+{
+  "skill_name": "yt-srt-mp3-to-video",
+  "evals": [
+    {"id": 1, "prompt": "这是我一段口播的字幕和配音，帮我按那套暗色示意动画的风格做成成片网页，横版。", "expected_output": "英文科技题材（AI 编程工具用量上限，72 秒）：按语义分场景的 scenes.json、分镜审阅页、全部场景都有动画的成片网页、自检截图", "files": ["inputs/en/字幕.srt", "inputs/en/配音.mp3"]},
+    {"id": 2, "prompt": "我做了一条讲记账的短口播，字幕和配音都在这里。想用暗色示意动画的风格配画面，不要出现字幕文字，横版就行。", "expected_output": "中文生活理财题材（57 秒）：同上，且画面不出现字幕文字，用示意图形表达非技术内容", "files": ["inputs/zh/字幕.srt", "inputs/zh/配音.mp3"]}
+  ]
+}

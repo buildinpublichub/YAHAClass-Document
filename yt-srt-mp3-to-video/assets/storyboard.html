@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__TITLE__ · 分镜审阅</title>
+<style>
+:root{--bg:#0d0d0d;--panel:#161616;--card:#1d1f23;--line:#2a2d33;--tx:#eeeeea;--mut:#8b929c;--or:#d87756;--ok:#a6c985;--warn:#e3b341}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--tx);font:14px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+.app{display:grid;grid-template-columns:300px 1fr;height:100vh}
+aside{border-right:1px solid var(--line);overflow:auto;background:var(--panel)}
+aside h1{font-size:15px;margin:0;padding:14px 16px 2px}
+aside .sum{color:var(--mut);font-size:12px;padding:0 16px 10px;border-bottom:1px solid var(--line)}
+.it{display:flex;gap:8px;align-items:baseline;padding:7px 16px;cursor:pointer;border-left:3px solid transparent}
+.it:hover{background:#1c1c1c}
+.it.cur{background:rgba(216,119,86,.12);border-left-color:var(--or)}
+.it .id{font:600 12px ui-monospace,Menlo,monospace;color:var(--or);width:44px;flex:none}
+.it .nm{flex:1;min-width:0}
+.it .du{font-variant-numeric:tabular-nums;font-size:12px;color:var(--mut)}
+.it.flag .du{color:var(--warn);font-weight:600}
+main{overflow:auto;padding:18px 22px 60px;min-width:0}
+.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:8px;padding:7px 13px;font:inherit;cursor:pointer}
+.btn.pri{background:var(--or);border-color:var(--or);color:#111;font-weight:600}
+.meta{color:var(--mut);font-variant-numeric:tabular-nums}
+.tl{position:relative;height:22px;display:flex;border-radius:5px;overflow:hidden;cursor:pointer;margin-bottom:16px}
+.tl span{height:100%;border-right:1px solid var(--bg);background:#23262b}.tl span.alt{background:#2c3036}.tl span.cur{background:var(--or)}
+.tl i{position:absolute;top:0;bottom:0;width:2px;background:#fff;pointer-events:none}
+.rules{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 16px;margin-bottom:16px}
+.rules h3{margin:0 0 6px;font-size:13px;color:var(--mut);font-weight:600}
+.rules div{margin:2px 0}
+.sc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.sc h2{margin:0 0 4px;font-size:20px}.sc h2 small{color:var(--or);font:600 14px ui-monospace,Menlo,monospace;margin-right:10px}
+.sc .tm{color:var(--mut);font-variant-numeric:tabular-nums;margin-bottom:12px}
+.prop{font-size:18px;font-weight:600;border-left:3px solid var(--or);padding:4px 0 4px 12px;margin:6px 0 16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:900px){.app{grid-template-columns:1fr}aside{max-height:30vh}.grid{grid-template-columns:1fr}}
+.blk h3{margin:0 0 6px;font-size:13px;color:var(--mut);font-weight:600}
+.obj{display:flex;gap:8px;margin:3px 0}.obj b{flex:none;color:var(--tx)}.obj span{color:var(--mut)}
+.seq{list-style:none;margin:0;padding:0}
+.seq li{display:flex;gap:10px;padding:7px 10px;border-radius:8px;margin:3px 0;border:1px solid transparent;opacity:.55;transition:opacity .2s}
+.seq li.done{opacity:.9}.seq li.now{opacity:1;border-color:var(--or);background:rgba(216,119,86,.1)}
+.seq .at{flex:none;width:92px;font:12px ui-monospace,Menlo,monospace;color:var(--mut);padding-top:2px}
+.seq .ph{flex:none;font-size:12px;color:var(--or);width:36px;padding-top:2px}
+.refs{display:flex;flex-wrap:wrap;gap:6px}.refs span{font:12px ui-monospace,Menlo,monospace;background:#26292e;border-radius:6px;padding:2px 8px;color:var(--ok)}
+.narr{margin-top:16px;border-top:1px solid var(--line);padding-top:10px}
+.narr div{padding:3px 8px;border-radius:6px;color:var(--mut)}.narr div.now{color:var(--tx);background:#23262b}
+.narr small{font-variant-numeric:tabular-nums;margin-right:8px}
+</style>
+</head>
+<body>
+<div class="app">
+<aside><h1>__TITLE__</h1><div class="sum" id="sum"></div><div id="list"></div></aside>
+<main>
+  <div class="top"><button class="btn pri" id="play">▶ 播放</button><button class="btn" id="prev">← 上一场景</button><button class="btn" id="next">下一场景 →</button><span class="meta" id="meta"></span></div>
+  <div class="tl" id="tl"><i id="ph"></i></div>
+  <div class="rules" id="rules"></div>
+  <div class="sc" id="sc"></div>
+</main>
+</div>
+<audio id="au" src="__AUDIO__" preload="auto"></audio>
+<script>
+const D=__DATA__,S=D.scenes,subs=D.subs,TOTAL=D.total;
+const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const fmt=t=>{t=Math.max(0,t);return Math.floor(t/60)+":"+(t%60).toFixed(1).padStart(4,"0")};
+S.forEach(s=>{s.t0=subs[s.a][0];s.t1=subs[s.b][1]});
+const dur=S.map(s=>s.t1-s.t0);
+document.getElementById("sum").textContent=`${S.length} 个场景 · 平均 ${(dur.reduce((a,b)=>a+b,0)/S.length).toFixed(1)} 秒 · 总长 ${fmt(TOTAL)}`;
+const R=D.rules||{};
+document.getElementById("rules").innerHTML="<h3>本片视觉规则</h3>"+Object.entries(R).map(([k,v])=>`<div><b>${esc(k)}</b>：${esc(Array.isArray(v)?v.join("；"):v)}</div>`).join("")||"";
+if(!Object.keys(R).length)document.getElementById("rules").style.display="none";
+const list=document.getElementById("list");
+S.forEach((s,k)=>{const e=document.createElement("div");e.className="it"+(dur[k]<3||dur[k]>30?" flag":"");
+  e.innerHTML=`<span class="id">${esc(s.id)}</span><span class="nm">${esc(s.name)}</span><span class="du">${dur[k].toFixed(1)}s</span>`;e.onclick=()=>seek(s.t0);list.appendChild(e)});
+const tl=document.getElementById("tl");
+S.forEach((s,k)=>{const e=document.createElement("span");e.className=k%2?"alt":"";const nx=S[k+1]?S[k+1].t0:TOTAL;e.style.width=((nx-(k?s.t0:0))/TOTAL*100)+"%";e.title=s.id+" "+s.name;tl.insertBefore(e,document.getElementById("ph"))});
+tl.onclick=e=>{const b=tl.getBoundingClientRect();seek((e.clientX-b.left)/b.width*TOTAL)};
+let cur=-1,T=0;
+function sceneAt(t){let i=0;S.forEach((s,k)=>{if(t>=s.t0-.15)i=k});return i}
+function show(i){const s=S[i];cur=i;[...list.children].forEach((e,k)=>e.classList.toggle("cur",k===i));[...tl.querySelectorAll("span")].forEach((e,k)=>e.classList.toggle("cur",k===i));
+  list.children[i].scrollIntoView({block:"nearest"});
+  const objs=(s.objects||[]).map(o=>typeof o==="string"?`<div class="obj"><span>${esc(o)}</span></div>`:`<div class="obj"><b>${esc(o.name)}</b><span>${esc(o.shape||"")}${o.label?"　标签：「"+esc(o.label)+"」":""}</span></div>`).join("");
+  const seq=(s.sequence||[]).map((x,k)=>{const tt=x.at?subs[x.at][0]+(x.dt||0):s.t0;return`<li data-t="${tt}"><span class="at">${x.at?"#"+x.at+(x.dt?"+"+x.dt+"s":"")+" "+fmt(tt):""}</span><span class="ph">${esc(x.phase||"")}</span><span>${esc(x.do)}</span></li>`}).join("");
+  const narr=[];for(let n=s.a;n<=s.b;n++)narr.push(`<div data-n="${n}"><small>#${n} ${fmt(subs[n][0])}</small>${esc(subs[n][2])}</div>`);
+  document.getElementById("sc").innerHTML=`<h2><small>${esc(s.id)}</small>${esc(s.name)}</h2><div class="tm">字幕 #${s.a}–#${s.b}　${fmt(s.t0)} – ${fmt(s.t1)}（${(s.t1-s.t0).toFixed(1)} 秒）</div>
+   <div class="prop">${esc(s.prop)}</div>
+   <div class="grid"><div class="blk"><h3>对象与短标签</h3>${objs||'<span class="meta">—</span>'}${s.layout?`<h3 style="margin-top:12px">构图</h3><div>${esc(s.layout)}</div>`:""}</div>
+   <div class="blk"><h3>状态序列（跟随旁白点亮）</h3><ul class="seq">${seq}</ul></div></div>
+   <div class="grid" style="margin-top:14px"><div class="blk"><h3>借鉴</h3><div class="refs">${(s.refs||[]).map(r=>`<span>${esc(r)}</span>`).join("")||'<span style="color:var(--mut);background:none">—</span>'}</div></div>
+   <div class="blk"><h3>场景衔接 / 验收要点</h3><div>${esc(s.carry||"—")}</div><div style="color:var(--ok)">${esc(s.accept||"")}</div></div></div>
+   <div class="narr"><h3 style="margin:0 0 6px;font-size:13px;color:var(--mut)">本场景旁白</h3>${narr.join("")}</div>`}
+function tick(){const i=sceneAt(T);if(i!==cur)show(i);
+  document.querySelectorAll(".seq li").forEach((li,k,all)=>{const t=+li.dataset.t,nx=all[k+1]?+all[k+1].dataset.t:1e9;li.classList.toggle("now",T>=t-.2&&T<nx-.2);li.classList.toggle("done",T>=nx-.2)});
+  document.querySelectorAll(".narr div[data-n]").forEach(e=>{const q=subs[e.dataset.n];e.classList.toggle("now",T>=q[0]&&T<q[1]+.05)});
+  document.getElementById("ph").style.left=(T/TOTAL*100)+"%";document.getElementById("meta").textContent=fmt(T)+" / "+fmt(TOTAL)}
+const au=document.getElementById("au");let playing=false;
+function seek(t){T=Math.max(0,Math.min(TOTAL,t));try{au.currentTime=T}catch(e){}tick()}
+function loop(){if(!playing)return;T=au.currentTime;tick();requestAnimationFrame(loop)}
+document.getElementById("play").onclick=()=>{if(playing){au.pause();playing=false;document.getElementById("play").textContent="▶ 播放"}else{au.play().catch(()=>{});playing=true;document.getElementById("play").textContent="❚❚ 暂停";loop()}};
+document.getElementById("prev").onclick=()=>{const i=sceneAt(T);if(S[i-1])seek(S[i-1].t0)};
+document.getElementById("next").onclick=()=>{const i=sceneAt(T);if(S[i+1])seek(S[i+1].t0)};
+document.addEventListener("keydown",e=>{if(e.target.tagName==="INPUT")return;if(e.code==="Space"){e.preventDefault();document.getElementById("play").click()}else if(e.key==="ArrowRight")document.getElementById("next").click();else if(e.key==="ArrowLeft")document.getElementById("prev").click()});
+au.onended=()=>{playing=false;document.getElementById("play").textContent="▶ 播放"};
+seek(0);
+</script>
+</body>
+</html>

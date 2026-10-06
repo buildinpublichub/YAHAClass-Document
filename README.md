@@ -29,6 +29,8 @@
 
 - **[`claude-code-mods/`](./claude-code-mods)** — Claude Code Mods（函数式插件）配套：跑官方示例 Blast Radius / Replay Theater 用的测试仓库（greet 小项目 + 一键建 `build/` 的 `setup.sh`），以及从零写的上下文“天气预报”横栏 Token Weather 完整插件（清单、入口代码、`$.state` 类型声明、测试），附安装成本地插件市场的步骤。
 
+- **[`yt-srt-mp3-to-video/`](./yt-srt-mp3-to-video)** — 一个完整的 Claude Code Skill：把口播视频的 SRT 字幕 + MP3 配音做成「示意动画」成片（暗色 / 亮色两种主题，横版 / 竖版两种画幅），从分镜到 4K MP4 全流程由 Claude 完成。安装和使用方法见目录内 [README](./yt-srt-mp3-to-video/README.md)。
+
 ---
 
 💡 找不到某支视频的代码？可能还没整理上来，欢迎在对应视频下留言提醒。
