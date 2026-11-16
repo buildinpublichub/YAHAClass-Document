@@ -1,0 +1,14 @@
+EGM 视频测试套件
+
+这份套件对应 2026-11-15 视频里的待办事项程序测试，保留原始英文测试文件与九项问题答案清单。
+
+1. 解压后运行 bash make_project.sh ~/egm-demo；若目标目录已经存在，脚本会退出，请换新目录。
+2. 在新项目中启动 Claude Code，安装 EGM 后执行 /egm:egm-review docs/designs/reminders.md。
+3. 提供 context_files.txt 列出的相关文件，选择所需审查模式。
+4. 报告生成后，运行 python3 check_gaps.py ~/egm-demo，再对照 answer_key.md 人工检查。
+
+check_gaps.py 只搜索报告关键词，不是自动证明审查正确的测试；中文报告也可能匹配不到英文关键词。
+原始示例程序把任务保存在 ~/.todo.json，执行 add/done 会写入该文件。建议在独立测试环境中体验。
+该小程序刻意保留设计缺口，仅用于对照审查结果。README 内 python 命令在本机需要时可用 python3。
+
+本套件不是 Google 官方发行包，也不保证重复运行得到与视频完全相同的结论或耗时。
